@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ struct AuthenticationVerifyEmailViewState: BindableState {
     
     /// The message shown in the header while asking for an email address to be entered.
     var formHeaderMessage: String {
-        VectorL10n.authenticationVerifyEmailInputMessage(homeserver.address)
+        VectorL10n.authenticationVerifyEmailInputMessage("STVDIO SPACE")
     }
     
     /// Whether the email address is valid and the user can continue.

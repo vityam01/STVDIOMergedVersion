@@ -17,7 +17,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>im.vector.app.pills</string>
+				<string>io.stvd.space.pills</string>
 			</array>
 		</dict>
 	</array>
@@ -51,9 +51,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
-	<true/>
-	<key>ITSEncryptionExportComplianceCode</key>
-	<string>d1dd539c-d21c-43e2-92e2-212c5269565c</string>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>http</string>
@@ -71,25 +69,22 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>See your scheduled meetings in the app.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>The camera is used to make video calls, or take and upload photos and videos.</string>
+	<string>The app uses the camera to make video calls with other users, or to take and upload photos and videos you share in a chat space.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>They will be shared with your identity server to help find your contacts on Matrix.</string>
+	<string>Your contacts will be shared with STVDIO to help find your friends already on the app, but STVDIO does not retain your contact information.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Face ID is used to access your app.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>When you share your location to people, Element needs access to show them a map.</string>
+	<string>Face ID is used to access the app.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>When you share your location to people, Element needs access to show them a map.</string>
+	<string>When you share your location to people, the app needs access to show them a map.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>The microphone is used to take videos, make calls.</string>
+	<string>The app uses the microphone to take videos and make calls.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow access to photos to upload photos and videos from your library.</string>
+	<string>The app needs access to your photo library when you share photos and videos from your photo library in a chat space, or to update your profile picture.</string>
 	<key>NSSiriUsageDescription</key>
 	<string>Siri is used to perform calls even from the lock screen.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
-		<string>location</string>
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
@@ -124,6 +119,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>UTExportedTypeDeclarations</key>
@@ -135,10 +132,16 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Mention Pills</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
 			<key>UTTypeIdentifier</key>
-			<string>im.vector.app.pills</string>
+			<string>io.stvd.space.pills</string>
+			<key>UTTypeTagSpecification</key>
+			<dict/>
 		</dict>
 	</array>
+	<key>UserDefaults</key>
+	<string>${PRODUCT_NAME}-Defaults</string>
 	<key>applicationGroupIdentifier</key>
 	<string>$(APPLICATION_GROUP_IDENTIFIER)</string>
 	<key>baseBundleIdentifier</key>

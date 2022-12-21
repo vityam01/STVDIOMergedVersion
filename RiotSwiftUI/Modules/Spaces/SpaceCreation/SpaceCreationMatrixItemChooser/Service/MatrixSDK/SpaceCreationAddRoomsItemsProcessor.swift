@@ -17,6 +17,7 @@
 import Foundation
 
 class SpaceCreationAddRoomsItemsProcessor: MatrixItemChooserProcessorProtocol {
+    
     // MARK: Private
     
     private let creationParams: SpaceCreationParameters
@@ -40,7 +41,8 @@ class SpaceCreationAddRoomsItemsProcessor: MatrixItemChooserProcessorProtocol {
         completion(.success(()))
     }
     
-    func isItemIncluded(_ item: MatrixListItemData) -> Bool {
-        true
+    func isItemIncluded(_ item: (MatrixListItemData)) -> Bool {
+        return true
     }
+    
 }

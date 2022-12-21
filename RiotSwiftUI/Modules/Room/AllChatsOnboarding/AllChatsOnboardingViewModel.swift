@@ -14,12 +14,15 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
-typealias AllChatsOnboardingViewModelType = StateStoreViewModel<AllChatsOnboardingViewState, AllChatsOnboardingViewAction>
+typealias AllChatsOnboardingViewModelType = StateStoreViewModel<AllChatsOnboardingViewState,
+                                                                 Never,
+                                                                 AllChatsOnboardingViewAction>
 
 class AllChatsOnboardingViewModel: AllChatsOnboardingViewModelType, AllChatsOnboardingViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Private
@@ -31,7 +34,7 @@ class AllChatsOnboardingViewModel: AllChatsOnboardingViewModelType, AllChatsOnbo
     // MARK: - Setup
 
     static func makeAllChatsOnboardingViewModel() -> AllChatsOnboardingViewModelProtocol {
-        AllChatsOnboardingViewModel()
+        return AllChatsOnboardingViewModel()
     }
 
     private init() {
@@ -39,7 +42,7 @@ class AllChatsOnboardingViewModel: AllChatsOnboardingViewModelType, AllChatsOnbo
     }
 
     private static func defaultState() -> AllChatsOnboardingViewState {
-        AllChatsOnboardingViewState(pages: [
+        return AllChatsOnboardingViewState(pages: [
             AllChatsOnboardingPageData(image: Asset.Images.allChatsOnboarding1.image,
                                        title: VectorL10n.allChatsOnboardingPageTitle1,
                                        message: VectorL10n.allChatsOnboardingPageMessage1),

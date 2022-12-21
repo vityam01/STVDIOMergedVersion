@@ -160,7 +160,7 @@ final class OnboardingCoordinator: NSObject, OnboardingCoordinatorProtocol {
         
         switch result {
         case .register:
-            showUseCaseSelectionScreen()
+            beginAuthentication(with: .registration, onStart: coordinator.stop)
         case .login:
             if BuildSettings.onboardingEnableNewAuthenticationFlow {
                 beginAuthentication(with: .login, onStart: coordinator.stop)
@@ -310,13 +310,7 @@ final class OnboardingCoordinator: NSObject, OnboardingCoordinatorProtocol {
             let shouldShowPersonalization = BuildSettings.onboardingShowAccountPersonalization && authenticationType.analyticsType != .SSO
             
             // If personalisation is to be shown, check that the homeserver supports it otherwise show the congratulations screen
-            if shouldShowPersonalization {
                 checkHomeserverCapabilities(for: userSession)
-                return
-            } else {
-                showCongratulationsScreen(for: userSession)
-                return
-            }
         } else if Analytics.shared.shouldShowAnalyticsPrompt {
             showAnalyticsPrompt(for: session)
             return
@@ -366,7 +360,7 @@ final class OnboardingCoordinator: NSObject, OnboardingCoordinatorProtocol {
     
     /// Starts the part of the flow that comes after authentication for new users.
     private func beginPostAuthentication(for userSession: UserSession) {
-        showCongratulationsScreen(for: userSession)
+        checkHomeserverCapabilities(for: userSession)
     }
     
     /// Show the congratulations screen for new users. The screen will be configured based on the homeserver's capabilities.

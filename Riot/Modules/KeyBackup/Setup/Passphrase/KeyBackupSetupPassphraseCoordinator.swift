@@ -23,6 +23,7 @@ final class KeyBackupSetupPassphraseCoordinator: KeyBackupSetupPassphraseCoordin
     
     // MARK: Private
     
+    private let session: MXSession
     private var keyBackupSetupPassphraseViewModel: KeyBackupSetupPassphraseViewModelType
     private let keyBackupSetupPassphraseViewController: KeyBackupSetupPassphraseViewController
     
@@ -34,8 +35,10 @@ final class KeyBackupSetupPassphraseCoordinator: KeyBackupSetupPassphraseCoordin
     
     // MARK: - Setup
     
-    init(keyBackup: MXKeyBackup) {
-        let keyBackupSetupPassphraseViewModel = KeyBackupSetupPassphraseViewModel(keyBackup: keyBackup)
+    init(session: MXSession) {
+        self.session = session
+        
+        let keyBackupSetupPassphraseViewModel = KeyBackupSetupPassphraseViewModel(keyBackup: self.session.crypto.backup)
         let keyBackupSetupPassphraseViewController = KeyBackupSetupPassphraseViewController.instantiate(with: keyBackupSetupPassphraseViewModel)
         self.keyBackupSetupPassphraseViewModel = keyBackupSetupPassphraseViewModel
         self.keyBackupSetupPassphraseViewController = keyBackupSetupPassphraseViewController

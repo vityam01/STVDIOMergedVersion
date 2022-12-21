@@ -166,11 +166,10 @@ private extension CMarkNode {
 private extension String {
     /// Returns array of URLs detected inside the String.
     var containedUrls: [NSTextCheckingResult] {
-        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue),
-              let percentEncoded = self.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
             return []
         }
 
-        return detector.matches(in: percentEncoded, options: [], range: NSRange(location: 0, length: percentEncoded.utf16.count))
+        return detector.matches(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count))
     }
 }

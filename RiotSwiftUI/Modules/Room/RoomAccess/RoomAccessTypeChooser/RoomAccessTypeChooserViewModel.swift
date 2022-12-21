@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,14 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
     
-typealias RoomAccessTypeChooserViewModelType = StateStoreViewModel<RoomAccessTypeChooserViewState, RoomAccessTypeChooserViewAction>
-
+typealias RoomAccessTypeChooserViewModelType = StateStoreViewModel<RoomAccessTypeChooserViewState,
+                                                              RoomAccessTypeChooserStateAction,
+                                                              RoomAccessTypeChooserViewAction>
 class RoomAccessTypeChooserViewModel: RoomAccessTypeChooserViewModelType, RoomAccessTypeChooserViewModelProtocol {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -41,19 +43,15 @@ class RoomAccessTypeChooserViewModel: RoomAccessTypeChooserViewModelType, RoomAc
     private static func defaultState(roomAccessTypeChooserService: RoomAccessTypeChooserServiceProtocol) -> RoomAccessTypeChooserViewState {
         let bindings = RoomAccessTypeChooserViewModelBindings(
             showUpgradeRoomAlert: roomAccessTypeChooserService.roomUpgradeRequiredSubject.value,
-            waitingMessage: roomAccessTypeChooserService.waitingMessageSubject.value, isLoading: roomAccessTypeChooserService.waitingMessageSubject.value != nil
-        )
+            waitingMessage: roomAccessTypeChooserService.waitingMessageSubject.value, isLoading: roomAccessTypeChooserService.waitingMessageSubject.value != nil)
         return RoomAccessTypeChooserViewState(accessItems: roomAccessTypeChooserService.accessItemsSubject.value, bindings: bindings)
     }
     
     private func startObservingService() {
-        roomAccessTypeChooserService
-            .accessItemsSubject
-            .sink(receiveValue: { [weak self] accessItems in
-                self?.state.accessItems = accessItems
-            })
-            .store(in: &cancellables)
-        
+        let accessTypePublisher = roomAccessTypeChooserService.accessItemsSubject
+            .map(RoomAccessTypeChooserStateAction.updateAccessItems)
+            .eraseToAnyPublisher()
+        dispatch(actionPublisher: accessTypePublisher)
         roomAccessTypeChooserService
             .roomUpgradeRequiredSubject
             .sink { [weak self] isUpgradeRequired in
@@ -62,13 +60,10 @@ class RoomAccessTypeChooserViewModel: RoomAccessTypeChooserViewModelType, RoomAc
                 }
             }
             .store(in: &cancellables)
-        
-        roomAccessTypeChooserService.waitingMessageSubject
-            .sink(receiveValue: { [weak self] message in
-                self?.state.bindings.waitingMessage = message
-                self?.state.bindings.isLoading = message != nil
-            })
-            .store(in: &cancellables)
+        let waitingMessagePublisher = roomAccessTypeChooserService.waitingMessageSubject
+            .map(RoomAccessTypeChooserStateAction.updateWaitingMessage)
+            .eraseToAnyPublisher()
+        dispatch(actionPublisher: waitingMessagePublisher)
     }
     
     // MARK: - Public
@@ -83,7 +78,19 @@ class RoomAccessTypeChooserViewModel: RoomAccessTypeChooserViewModelType, RoomAc
             cancel()
         }
     }
-        
+    
+    override class func reducer(state: inout RoomAccessTypeChooserViewState, action: RoomAccessTypeChooserStateAction) {
+        switch action {
+        case .updateAccessItems(let accessItems):
+            state.accessItems = accessItems
+        case .updateShowUpgradeRoomAlert(let show):
+            state.bindings.showUpgradeRoomAlert = show
+        case .updateWaitingMessage(let message):
+            state.bindings.waitingMessage = message
+            state.bindings.isLoading = message != nil
+        }
+    }
+    
     func handleRoomUpgradeResult(_ result: RoomUpgradeCoordinatorResult) {
         switch result {
         case .cancel(let roomId):
@@ -123,7 +130,7 @@ class RoomAccessTypeChooserViewModel: RoomAccessTypeChooserViewModelType, RoomAc
     
     private func didSelect(accessType: RoomAccessTypeChooserAccessType) {
         roomAccessTypeChooserService.updateSelection(with: accessType)
-        if accessType == .restricted, !roomAccessTypeChooserService.roomUpgradeRequiredSubject.value {
+        if accessType == .restricted && !roomAccessTypeChooserService.roomUpgradeRequiredSubject.value {
             callback?(.spaceSelection(roomAccessTypeChooserService.currentRoomId, .restricted))
         }
     }

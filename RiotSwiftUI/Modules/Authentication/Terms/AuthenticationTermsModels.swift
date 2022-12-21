@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ struct AuthenticationTermsPolicy: Identifiable, Equatable {
     /// The policy's subtitle.
     let subtitle: String
     /// Whether or not the policy has been accepted.
-    var accepted = false
+    var accepted: Bool = false
 }
 
 // MARK: View model
@@ -50,7 +50,7 @@ struct AuthenticationTermsViewState: BindableState {
     var bindings: AuthenticationTermsBindings
     
     var headerMessage: String {
-        VectorL10n.authenticationTermsMessage(homeserver.address)
+        VectorL10n.authenticationTermsMessage("STVDIO SPACE")
     }
     
     /// Whether or not all of the policies have been accepted.

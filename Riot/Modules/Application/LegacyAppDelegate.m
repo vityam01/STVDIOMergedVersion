@@ -128,11 +128,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
      If any the currently displayed key verification dialog
      */
     KeyVerificationCoordinatorBridgePresenter *keyVerificationCoordinatorBridgePresenter;
-    
-    /**
-     Completion block for the requester of key verification
-     */
-    void (^keyVerificationCompletionBlock)(void);
 
     /**
      Currently displayed secure backup setup
@@ -615,9 +610,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     // Analytics: Force to send the pending actions
     [[DecryptionFailureTracker sharedInstance] dispatch];
     [Analytics.shared forceUpload];
-    
-    // Pause Voice Broadcast recording if needed
-    [VoiceBroadcastRecorderProvider.shared pauseRecording];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -638,8 +630,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     [self.pushNotificationService applicationDidBecomeActive];
     
     [self configurePinCodeScreenFor:application createIfRequired:NO];
-    
-    [self checkCrossSigningForSession:self.mxSessions.firstObject];
 }
 
 - (void)configurePinCodeScreenFor:(UIApplication *)application
@@ -2195,10 +2185,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     // Reset analytics
     [Analytics.shared reset];
     
-    [[[ReviewSessionAlertSnoozeController alloc] init] clearSnooze];
-    
-    [TimelinePollProvider.shared reset];
-    
 #ifdef MX_CALL_STACK_ENDPOINT
     // Erase all created certificates and private keys by MXEndpointCallStack
     for (MXKAccount *account in MXKAccountManager.sharedManager.accounts)
@@ -2294,9 +2280,9 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                     // Stay in launching during the first server sync if the store is empty.
                     isLaunching = (mainSession.rooms.count == 0 && launchAnimationContainerView);
                     
-                    if (mainSession.crypto.crossSigning && mainSession.crypto.crossSigning.state == MXCrossSigningStateCrossSigningExists && [mainSession.crypto isKindOfClass:[MXLegacyCrypto class]])
+                    if (mainSession.crypto.crossSigning && mainSession.crypto.crossSigning.state == MXCrossSigningStateCrossSigningExists)
                     {
-                        [(MXLegacyCrypto *)mainSession.crypto setOutgoingKeyRequestsEnabled:NO onComplete:nil];
+                        [mainSession.crypto setOutgoingKeyRequestsEnabled:NO onComplete:nil];
                     }
                     break;
                 case MXSessionStateRunning:
@@ -2394,17 +2380,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     {
         MXLogDebug(@"[AppDelegate] showLaunchAnimation");
         
-        LaunchLoadingView *launchLoadingView;
-        if (MXSDKOptions.sharedInstance.enableSyncProgress)
-        {
-            MXSession *mainSession = self.mxSessions.firstObject;
-            launchLoadingView = [LaunchLoadingView instantiateWithSyncProgress:mainSession.syncProgress];
-        }
-        else
-        {
-            launchLoadingView = [LaunchLoadingView instantiateWithSyncProgress:nil];
-        }
-                
+        LaunchLoadingView *launchLoadingView = [LaunchLoadingView instantiate];
         launchLoadingView.frame = window.bounds;
         [launchLoadingView updateWithTheme:ThemeService.shared.theme];
         launchLoadingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -2519,12 +2495,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 - (void)checkLocalPrivateKeysInSession:(MXSession*)mxSession
 {
-    if (![mxSession.crypto isKindOfClass:[MXLegacyCrypto class]])
-    {
-        return;
-    }
-    MXLegacyCrypto *crypto = (MXLegacyCrypto *)mxSession.crypto;
-    
     MXRecoveryService *recoveryService = mxSession.crypto.recoveryService;
     NSUInteger keysCount = 0;
     if ([recoveryService hasSecretWithSecretId:MXSecretId.keyBackup])
@@ -2545,7 +2515,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     {
         // We should have 3 of them. If not, request them again as mitigation
         MXLogDebug(@"[AppDelegate] checkLocalPrivateKeysInSession: request keys because keysCount = %@", @(keysCount));
-        [crypto requestAllPrivateKeys];
+        [mxSession.crypto requestAllPrivateKeys];
     }
 }
 
@@ -3505,24 +3475,17 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
         MXLogDebug(@"[AppDelegate] checkPendingRoomKeyRequestsInSession called while the app is not active. Ignore it.");
         return;
     }
-    
-    if (![mxSession.crypto isKindOfClass:[MXLegacyCrypto class]])
-    {
-        MXLogDebug(@"[AppDelegate] checkPendingRoomKeyRequestsInSession: Only legacy crypto allows manually accepting/rejecting key requests");
-        return;
-    }
-    MXLegacyCrypto *crypto = (MXLegacyCrypto *)mxSession.crypto;
 
     MXWeakify(self);
-    [crypto pendingKeyRequests:^(MXUsersDevicesMap<NSArray<MXIncomingRoomKeyRequest *> *> *pendingKeyRequests) {
+    [mxSession.crypto pendingKeyRequests:^(MXUsersDevicesMap<NSArray<MXIncomingRoomKeyRequest *> *> *pendingKeyRequests) {
         
         MXStrongifyAndReturnIfNil(self);
         MXLogDebug(@"[AppDelegate] checkPendingRoomKeyRequestsInSession: cross-signing state: %ld, pendingKeyRequests.count: %@. Already displayed: %@",
-                   crypto.crossSigning.state,
+                   mxSession.crypto.crossSigning.state,
                    @(pendingKeyRequests.count),
                    self->roomKeyRequestViewController ? @"YES" : @"NO");
 
-        if (!crypto.crossSigning || crypto.crossSigning.state == MXCrossSigningStateNotBootstrapped)
+        if (!mxSession.crypto.crossSigning || mxSession.crypto.crossSigning.state == MXCrossSigningStateNotBootstrapped)
         {
             if (self->roomKeyRequestViewController)
             {
@@ -3552,13 +3515,13 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
             
             // Give the client a chance to refresh the device list
             MXWeakify(self);
-            [crypto downloadKeys:@[userId] forceDownload:NO success:^(MXUsersDevicesMap<MXDeviceInfo *> *usersDevicesInfoMap, NSDictionary<NSString *,MXCrossSigningInfo *> *crossSigningKeysMap) {
+            [mxSession.crypto downloadKeys:@[userId] forceDownload:NO success:^(MXUsersDevicesMap<MXDeviceInfo *> *usersDevicesInfoMap, NSDictionary<NSString *,MXCrossSigningInfo *> *crossSigningKeysMap) {
                 
                 MXStrongifyAndReturnIfNil(self);
                 MXDeviceInfo *deviceInfo = [usersDevicesInfoMap objectForDevice:deviceId forUser:userId];
                 if (deviceInfo)
                 {
-                    if (!crypto.crossSigning || crypto.crossSigning.state == MXCrossSigningStateNotBootstrapped)
+                    if (!mxSession.crypto.crossSigning || mxSession.crypto.crossSigning.state == MXCrossSigningStateNotBootstrapped)
                     {
                         BOOL wasNewDevice = (deviceInfo.trustLevel.localVerificationStatus == MXDeviceUnknown);
                         
@@ -3566,7 +3529,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                         {
                             MXLogDebug(@"[AppDelegate] checkPendingRoomKeyRequestsInSession: Open dialog for %@", deviceInfo);
 
-                            self->roomKeyRequestViewController = [[RoomKeyRequestViewController alloc] initWithDeviceInfo:deviceInfo wasNewDevice:wasNewDevice andMatrixSession:mxSession crypto:crypto onComplete:^{
+                            self->roomKeyRequestViewController = [[RoomKeyRequestViewController alloc] initWithDeviceInfo:deviceInfo wasNewDevice:wasNewDevice andMatrixSession:mxSession onComplete:^{
 
                                 self->roomKeyRequestViewController = nil;
 
@@ -3580,7 +3543,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                         // If the device was new before, it's not any more.
                         if (wasNewDevice)
                         {
-                            [crypto setDeviceVerification:MXDeviceUnverified forDevice:deviceId ofUser:userId success:openDialog failure:nil];
+                            [mxSession.crypto setDeviceVerification:MXDeviceUnverified forDevice:deviceId ofUser:userId success:openDialog failure:nil];
                         }
                         else
                         {
@@ -3589,13 +3552,13 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                     }
                     else if (deviceInfo.trustLevel.isVerified)
                     {
-                        [crypto acceptAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
+                        [mxSession.crypto acceptAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
                             [self checkPendingRoomKeyRequests];
                         }];
                     }
                     else
                     {
-                        [crypto ignoreAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
+                        [mxSession.crypto ignoreAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
                             [self checkPendingRoomKeyRequests];
                         }];
                     }
@@ -3603,7 +3566,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                 else
                 {
                     MXLogDebug(@"[AppDelegate] checkPendingRoomKeyRequestsInSession: No details found for device %@:%@", userId, deviceId);
-                    [crypto ignoreAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
+                    [mxSession.crypto ignoreAllPendingKeyRequestsFromUser:userId andDevice:deviceId onComplete:^{
                         [self checkPendingRoomKeyRequests];
                     }];
                 }
@@ -3636,7 +3599,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                                                   usingBlock:^(NSNotification *notif)
      {
          NSObject *object = notif.userInfo[MXKeyVerificationManagerNotificationTransactionKey];
-         if ([object conformsToProtocol:@protocol(MXSASTransaction)] && ((id<MXSASTransaction>)object).isIncoming)
+         if ([object isKindOfClass:MXIncomingSASTransaction.class])
          {
              [self checkPendingIncomingKeyVerificationsInSession:mxSession];
          }
@@ -3667,9 +3630,9 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
         for (id<MXKeyVerificationTransaction> transaction in transactions)
         {
-            if ([transaction conformsToProtocol:@protocol(MXSASTransaction)] && transaction.isIncoming)
+            if (transaction.isIncoming)
             {
-                id<MXSASTransaction> incomingTransaction = (id<MXSASTransaction>)transaction;
+                MXIncomingSASTransaction *incomingTransaction = (MXIncomingSASTransaction*)transaction;
                 if (incomingTransaction.state == MXSASTransactionStateIncomingShowAccept)
                 {
                     [self presentIncomingKeyVerification:incomingTransaction inSession:mxSession];
@@ -3713,7 +3676,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     return presented;
 }
 
-- (BOOL)presentIncomingKeyVerification:(id<MXSASTransaction>)transaction inSession:(MXSession*)mxSession
+- (BOOL)presentIncomingKeyVerification:(MXIncomingSASTransaction*)transaction inSession:(MXSession*)mxSession
 {
     MXLogDebug(@"[AppDelegate][MXKeyVerification] presentIncomingKeyVerification: %@", transaction);
 
@@ -3734,9 +3697,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     return presented;
 }
 
-- (BOOL)presentUserVerificationForRoomMember:(MXRoomMember*)roomMember
-                                     session:(MXSession*)mxSession
-                                  completion:(void (^)(void))completion;
+- (BOOL)presentUserVerificationForRoomMember:(MXRoomMember*)roomMember session:(MXSession*)mxSession
 {
     MXLogDebug(@"[AppDelegate][MXKeyVerification] presentUserVerificationForRoomMember: %@", roomMember);
     
@@ -3749,8 +3710,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
         [keyVerificationCoordinatorBridgePresenter presentFrom:self.presentedViewController roomMember:roomMember animated:YES];
         
         presented = YES;
-        
-        keyVerificationCompletionBlock = completion;
     }
     else
     {
@@ -3782,11 +3741,11 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 - (void)keyVerificationCoordinatorBridgePresenterDelegateDidComplete:(KeyVerificationCoordinatorBridgePresenter *)coordinatorBridgePresenter otherUserId:(NSString * _Nonnull)otherUserId otherDeviceId:(NSString * _Nonnull)otherDeviceId
 {
-    id<MXCrypto> crypto = coordinatorBridgePresenter.session.crypto;
-    if ([crypto isKindOfClass:[MXLegacyCrypto class]] && (!crypto.backup.hasPrivateKeyInCryptoStore || !crypto.backup.enabled))
+    MXCrypto *crypto = coordinatorBridgePresenter.session.crypto;
+    if (!crypto.backup.hasPrivateKeyInCryptoStore || !crypto.backup.enabled)
     {
         MXLogDebug(@"[AppDelegate][MXKeyVerification] requestAllPrivateKeys: Request key backup private keys");
-        [(MXLegacyCrypto *)crypto setOutgoingKeyRequestsEnabled:YES onComplete:nil];
+        [crypto setOutgoingKeyRequestsEnabled:YES onComplete:nil];
     }
     [self dismissKeyVerificationCoordinatorBridgePresenter];
 }
@@ -3803,25 +3762,20 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     }];
     
     keyVerificationCoordinatorBridgePresenter = nil;
-    
-    if (keyVerificationCompletionBlock) {
-        keyVerificationCompletionBlock();
-    }
-    keyVerificationCompletionBlock = nil;
 }
 
 #pragma mark - New request
 
 - (void)registerNewRequestNotificationForSession:(MXSession*)session
 {
-    id<MXKeyVerificationManager> keyVerificationManager = session.crypto.keyVerificationManager;
+    MXKeyVerificationManager *keyverificationManager = session.crypto.keyVerificationManager;
     
-    if (!keyVerificationManager)
+    if (!keyverificationManager)
     {
         return;
     }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyVerificationNewRequestNotification:) name:MXKeyVerificationManagerNewRequestNotification object:keyVerificationManager];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyVerificationNewRequestNotification:) name:MXKeyVerificationManagerNewRequestNotification object:keyverificationManager];
 }
 
 - (void)keyVerificationNewRequestNotification:(NSNotification *)notification
@@ -3846,26 +3800,28 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     
     id<MXKeyVerificationRequest> keyVerificationRequest = userInfo[MXKeyVerificationManagerNotificationRequestKey];
     
-    if (keyVerificationRequest.transport == MXKeyVerificationTransportDirectMessage)
+    if ([keyVerificationRequest isKindOfClass:MXKeyVerificationByDMRequest.class])
     {
-        if (!keyVerificationRequest.isFromMyUser && keyVerificationRequest.state == MXKeyVerificationRequestStatePending)
+        MXKeyVerificationByDMRequest *keyVerificationByDMRequest = (MXKeyVerificationByDMRequest*)keyVerificationRequest;
+        
+        if (!keyVerificationByDMRequest.isFromMyUser && keyVerificationByDMRequest.state == MXKeyVerificationRequestStatePending)
         {
             MXKAccount *currentAccount = [MXKAccountManager sharedManager].activeAccounts.firstObject;
             MXSession *session = currentAccount.mxSession;
-            MXRoom *room = [currentAccount.mxSession roomWithRoomId:keyVerificationRequest.roomId];
+            MXRoom *room = [currentAccount.mxSession roomWithRoomId:keyVerificationByDMRequest.roomId];
             if (!room)
             {
                 MXLogDebug(@"[AppDelegate][KeyVerification] keyVerificationRequestDidChangeNotification: Unknown room");
                 return;
             }
             
-            NSString *sender = keyVerificationRequest.otherUser;
+            NSString *sender = keyVerificationByDMRequest.otherUser;
 
             [room state:^(MXRoomState *roomState) {
 
                 NSString *senderName = [roomState.members memberName:sender];
                 
-                [self presentNewKeyVerificationRequestAlertForSession:session senderName:senderName senderId:sender request:keyVerificationRequest];
+                [self presentNewKeyVerificationRequestAlertForSession:session senderName:senderName senderId:sender request:keyVerificationByDMRequest];
             }];
         }
     }
@@ -3902,7 +3858,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
                 // This happens when they or our user do not have cross-signing enabled
                 MXLogDebug(@"[AppDelegate][KeyVerification] keyVerificationNewRequestNotification: Device verification from other user %@:%@", keyVerificationRequest.otherUser, keyVerificationRequest.otherDevice);
                 
-                NSString *myUserId = keyVerificationRequest.myUserId;
+                NSString *myUserId = ((MXKeyVerificationByToDeviceRequest*)keyVerificationRequest).to;
                 NSString *userId = keyVerificationRequest.otherUser;
                 MXKAccount *account = [[MXKAccountManager sharedManager] accountForUserId:myUserId];
                 if (account)
@@ -4027,7 +3983,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 - (void)registerUserDidSignInOnNewDeviceNotificationForSession:(MXSession*)session
 {
-    id<MXCrossSigning> crossSigning = session.crypto.crossSigning;
+    MXCrossSigning *crossSigning = session.crypto.crossSigning;
     
     if (!crossSigning)
     {
@@ -4118,7 +4074,7 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
 
 - (void)registerDidChangeCrossSigningKeysNotificationForSession:(MXSession*)session
 {
-    id<MXCrossSigning> crossSigning = session.crypto.crossSigning;
+    MXCrossSigning *crossSigning = session.crypto.crossSigning;
     
     if (!crossSigning)
     {
@@ -4327,12 +4283,6 @@ NSString *const AppDelegateUniversalLinkDidChangeNotification = @"AppDelegateUni
     if (BuildSettings.newAppLayoutEnabled)
     {
         RiotSettings.shared.showAllRoomsInHomeSpace = YES;
-    }
-    
-    if (RiotSettings.shared.forceThreadsEnabled)
-    {
-        RiotSettings.shared.enableThreads = YES;
-        RiotSettings.shared.forceThreadsEnabled = NO;
     }
 }
 

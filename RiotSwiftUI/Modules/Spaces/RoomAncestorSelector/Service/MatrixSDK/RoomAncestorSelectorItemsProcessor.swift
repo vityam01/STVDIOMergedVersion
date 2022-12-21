@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import Foundation
 
 class RoomAncestorSelectorItemsProcessor: MatrixItemChooserProcessorProtocol {
+    
     // MARK: Private
     
     private let roomId: String
@@ -25,7 +26,7 @@ class RoomAncestorSelectorItemsProcessor: MatrixItemChooserProcessorProtocol {
     
     init(roomId: String) {
         self.roomId = roomId
-        dataSource = MatrixItemChooserRoomAncestorsDataSource(roomId: roomId)
+        self.dataSource = MatrixItemChooserRoomAncestorsDataSource(roomId: roomId)
     }
     
     // MARK: MatrixItemChooserSelectionProcessorProtocol
@@ -40,7 +41,7 @@ class RoomAncestorSelectorItemsProcessor: MatrixItemChooserProcessorProtocol {
         completion(Result.success(()))
     }
     
-    func isItemIncluded(_ item: MatrixListItemData) -> Bool {
-        true
+    func isItemIncluded(_ item: (MatrixListItemData)) -> Bool {
+        return true
     }
 }

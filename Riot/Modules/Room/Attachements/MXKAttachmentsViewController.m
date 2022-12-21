@@ -346,11 +346,6 @@
 
 - (void)displayAttachments:(NSArray*)attachmentArray focusOn:(NSString*)eventId
 {
-    if ([attachmentArray isEqualToArray:attachments] && eventId.length == 0)
-    {
-        //  neither the attachments nor the focus changed, can be ignored
-        return;
-    }
     NSString *currentAttachmentEventId = eventId;
     NSString *currentAttachmentOriginalFileName = nil;
     

@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2022 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import SwiftUI
 
 struct AuthenticationTermsListItem: View {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -52,7 +53,7 @@ struct AuthenticationTermsListItem: View {
                     .font(theme.fonts.body)
                     .foregroundColor(theme.colors.primaryContent)
                 
-                Text(policy.subtitle)
+                Text("STVDIO SPACE")
                     .font(theme.fonts.subheadline)
                     .foregroundColor(theme.colors.tertiaryContent)
             }

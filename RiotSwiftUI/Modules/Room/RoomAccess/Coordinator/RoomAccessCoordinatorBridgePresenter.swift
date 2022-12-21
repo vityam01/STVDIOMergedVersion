@@ -1,5 +1,4 @@
 //
-import MatrixSDK
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,7 @@ import MatrixSDK
 // limitations under the License.
 //
 import UIKit
+import MatrixSDK
 
 @objc protocol RoomAccessCoordinatorBridgePresenterDelegate {
     func roomAccessCoordinatorBridgePresenterDelegate(_ coordinatorBridgePresenter: RoomAccessCoordinatorBridgePresenter, didCancelRoomWithId roomId: String)
@@ -27,6 +27,7 @@ import UIKit
 /// Each bridge should be removed once the underlying Coordinator has been integrated by another Coordinator.
 @objcMembers
 final class RoomAccessCoordinatorBridgePresenter: NSObject {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -81,7 +82,7 @@ final class RoomAccessCoordinatorBridgePresenter: NSObject {
     }
     
     func dismiss(animated: Bool, completion: (() -> Void)?) {
-        guard let coordinator = coordinator else {
+        guard let coordinator = self.coordinator else {
             return
         }
         coordinator.toPresentable().dismiss(animated: animated) {
@@ -97,11 +98,13 @@ final class RoomAccessCoordinatorBridgePresenter: NSObject {
 // MARK: - UIAdaptivePresentationControllerDelegate
 
 extension RoomAccessCoordinatorBridgePresenter: UIAdaptivePresentationControllerDelegate {
+    
     func roomNotificationSettingsCoordinatorDidComplete(_ presentationController: UIPresentationController) {
-        if let roomId = coordinator?.currentRoomId {
-            delegate?.roomAccessCoordinatorBridgePresenterDelegate(self, didCancelRoomWithId: roomId)
+        if let roomId = self.coordinator?.currentRoomId {
+            self.delegate?.roomAccessCoordinatorBridgePresenterDelegate(self, didCancelRoomWithId: roomId)
         } else {
-            delegate?.roomAccessCoordinatorBridgePresenterDelegate(self, didCancelRoomWithId: room.roomId)
+            self.delegate?.roomAccessCoordinatorBridgePresenterDelegate(self, didCancelRoomWithId: self.room.roomId)
         }
     }
+    
 }

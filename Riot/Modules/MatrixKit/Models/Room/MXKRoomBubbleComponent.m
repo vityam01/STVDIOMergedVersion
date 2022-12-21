@@ -65,12 +65,9 @@
         _event = event;
 
         _displayFix = MXKRoomBubbleComponentDisplayFixNone;
-        
-        NSString *format = event.content[@"format"];
-        if ([format isKindOfClass:[NSString class]] && [format isEqualToString:kMXRoomMessageFormatHTML])
+        if ([event.content[@"format"] isEqualToString:kMXRoomMessageFormatHTML])
         {
-            NSString *formattedBody = (NSString*)event.content[@"formatted_body"];
-            if ([formattedBody isKindOfClass:[NSString class]] && [formattedBody containsString:@"<blockquote"])
+            if ([((NSString*)event.content[@"formatted_body"]) containsString:@"<blockquote"])
             {
                 _displayFix |= MXKRoomBubbleComponentDisplayFixHtmlBlockquote;
             }

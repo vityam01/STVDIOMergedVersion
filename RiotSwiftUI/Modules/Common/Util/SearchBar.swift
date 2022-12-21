@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import SwiftUI
 
 struct SearchBar: View {
+    
     // MARK: - Properties
     
     var placeholder: String
@@ -48,7 +49,7 @@ struct SearchBar: View {
                         .foregroundColor(theme.colors.quarterlyContent)
                         .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
              
-                    if isEditing, !text.isEmpty {
+                    if isEditing && !text.isEmpty {
                         Button(action: {
                             self.text = ""
                         }) {
@@ -64,7 +65,7 @@ struct SearchBar: View {
                 Button(action: {
                     self.isEditing = false
                     self.text = ""
-                    self.hideKeyboard()
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }) {
                     Text(VectorL10n.cancel)
                         .font(theme.fonts.body)

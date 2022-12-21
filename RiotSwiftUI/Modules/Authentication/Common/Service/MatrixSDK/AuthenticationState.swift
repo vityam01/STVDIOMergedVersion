@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2022 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ struct AuthenticationState {
     
     init(flow: AuthenticationFlow, homeserverAddress: String, identityServer: String? = nil) {
         self.flow = flow
-        homeserver = Homeserver(address: homeserverAddress)
+        self.homeserver = Homeserver(address: homeserverAddress)
         self.identityServer = identityServer
     }
     
@@ -52,9 +52,6 @@ struct AuthenticationState {
         
         /// The preferred login mode for the server
         var preferredLoginMode: LoginMode = .unknown
-
-        /// Flag indicating whether the homeserver supports logging in via a QR code.
-        var supportsQRLogin = false
         
         /// The response returned when querying the homeserver for registration flows.
         var registrationFlow: RegistrationResult?
@@ -70,13 +67,12 @@ struct AuthenticationState {
             AuthenticationHomeserverViewData(address: displayableAddress,
                                              showLoginForm: preferredLoginMode.supportsPasswordFlow,
                                              showRegistrationForm: registrationFlow != nil && !needsRegistrationFallback,
-                                             showQRLogin: supportsQRLogin,
                                              ssoIdentityProviders: preferredLoginMode.ssoIdentityProviders ?? [])
         }
 
         /// Needs authentication fallback for login
         var needsLoginFallback: Bool {
-            preferredLoginMode.isUnsupported
+            return preferredLoginMode.isUnsupported
         }
 
         /// Needs authentication fallback for registration

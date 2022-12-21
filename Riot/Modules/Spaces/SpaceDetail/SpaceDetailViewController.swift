@@ -244,12 +244,13 @@ class SpaceDetailViewController: UIViewController {
         let joinRuleIcon = parameters.joinRule == .public ? Asset.Images.spaceTypeIcon : Asset.Images.spacePrivateIcon
         self.spaceTypeIconView.image = joinRuleIcon.image
         
-        self.inviterIdLabel.text = parameters.inviterId
+        self.inviterIdLabel.text = parameters.inviterId?.components(separatedBy: ":").first
         if let inviterId = parameters.inviterId {
-            self.inviterTitleLabel.text = "\(parameters.inviter?.displayname ?? inviterId) invited you"
+            let newInviterTitle = (parameters.inviter?.displayname ?? inviterId).components(separatedBy: ":").first ?? ""
+            self.inviterTitleLabel.text = "\(newInviterTitle) invited you"
             
             if let inviter = parameters.inviter {
-                let avatarViewData = AvatarViewData(matrixItemId: inviter.userId, displayName: inviter.displayname, avatarUrl: inviter.avatarUrl, mediaManager: self.mediaManager, fallbackImage: .matrixItem(inviter.userId, inviter.displayname))
+                let avatarViewData = AvatarViewData(matrixItemId: newInviterTitle, displayName: newInviterTitle, avatarUrl: inviter.avatarUrl, mediaManager: self.mediaManager, fallbackImage: .matrixItem(newInviterTitle, inviter.displayname))
                 self.inviterAvatarView.fill(with: avatarViewData)
             }
         }

@@ -18,6 +18,7 @@ import Foundation
 
 /// SpaceSettingsModalCoordinator input parameters
 struct SpaceSettingsModalCoordinatorParameters {
+    
     /// The Matrix session
     let session: MXSession
 

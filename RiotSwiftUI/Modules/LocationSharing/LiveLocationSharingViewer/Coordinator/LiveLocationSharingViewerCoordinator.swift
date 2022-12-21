@@ -23,6 +23,7 @@ struct LiveLocationSharingViewerCoordinatorParameters {
 }
 
 final class LiveLocationSharingViewerCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -50,8 +51,7 @@ final class LiveLocationSharingViewerCoordinator: Coordinator, Presentable {
         
         let viewModel = LiveLocationSharingViewerViewModel(
             mapStyleURL: parameters.session.vc_homeserverConfiguration().tileServer.mapStyleURL,
-            service: service
-        )
+            service: service)
         let view = LiveLocationSharingViewer(viewModel: viewModel.context)
             .addDependency(AvatarService.instantiate(mediaManager: parameters.session.mediaManager))
         liveLocationSharingViewerViewModel = viewModel
@@ -61,7 +61,6 @@ final class LiveLocationSharingViewerCoordinator: Coordinator, Presentable {
     }
     
     // MARK: - Public
-
     func start() {
         MXLog.debug("[LiveLocationSharingViewerCoordinator] did start.")
         liveLocationSharingViewerViewModel.completion = { [weak self] result in
@@ -75,7 +74,7 @@ final class LiveLocationSharingViewerCoordinator: Coordinator, Presentable {
             }
         }
         
-        let viewController: UIViewController = liveLocationSharingViewerHostingController
+        let viewController: UIViewController = self.liveLocationSharingViewerHostingController
         
         if navigationRouter.modules.count > 1 {
             navigationRouter.push(viewController, animated: true, popCompletion: nil)
@@ -85,13 +84,14 @@ final class LiveLocationSharingViewerCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        navigationRouter.toPresentable()
+        return navigationRouter.toPresentable()
             .vc_setModalFullScreen(true) // Set fullscreen as DSBottomSheet is not working with modal pan gesture recognizer
     }
     
     func presentLocationActivityController(with coordinate: CLLocationCoordinate2D) {
+        
         let shareActivityController = shareLocationActivityControllerBuilder.build(with: coordinate)
         
-        liveLocationSharingViewerHostingController.present(shareActivityController, animated: true)
+        self.liveLocationSharingViewerHostingController.present(shareActivityController, animated: true)
     }
 }

@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
 // limitations under the License.
 //
 
-import DesignKit
 import Foundation
+import DesignKit
 
 // Conformance of MXPushRule to the abstraction `NotificationPushRule` for use in `NotificationSettingsViewModel`.
 extension MXPushRule: NotificationPushRuleType {
+    
     /// Given a rule, check it match the actions in the static definition.
     /// - Parameter standardActions: The standard actions to match against.
     /// - Returns: Wether `this` rule matches the standard actions.
@@ -26,7 +27,7 @@ extension MXPushRule: NotificationPushRuleType {
         guard let standardActions = standardActions else {
             return false
         }
-        if !enabled, standardActions == .disabled {
+        if !enabled && standardActions == .disabled {
             return true
         }
         
@@ -74,10 +75,10 @@ extension MXPushRule: NotificationPushRuleType {
     }
     
     var notify: Bool {
-        getAction(actionType: MXPushRuleActionTypeNotify) != nil
+        return getAction(actionType: MXPushRuleActionTypeNotify) != nil
     }
     
     var dontNotify: Bool {
-        getAction(actionType: MXPushRuleActionTypeDontNotify) != nil
+        return getAction(actionType: MXPushRuleActionTypeDontNotify) != nil
     }
 }

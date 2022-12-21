@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2022 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,52 +18,39 @@ import Foundation
 
 // MARK: - Coordinator
 
-enum UserSessionsOverviewCoordinatorResult {
-    case verifyCurrentSession
-    case renameSession(UserSessionInfo)
-    case logoutOfSession(UserSessionInfo)
-    case openSessionOverview(sessionInfo: UserSessionInfo)
-    case openOtherSessions(sessionInfos: [UserSessionInfo], filter: UserOtherSessionsFilter)
-    case linkDevice
-    case logoutFromUserSessions(sessionInfos: [UserSessionInfo])
-}
-
 // MARK: View model
 
-enum UserSessionsOverviewViewModelResult: Equatable {
-    case showOtherSessions(sessionInfos: [UserSessionInfo], filter: UserOtherSessionsFilter)
+enum UserSessionsOverviewViewModelResult {
+    case cancel
+    case showAllUnverifiedSessions
+    case showAllInactiveSessions
     case verifyCurrentSession
-    case renameSession(UserSessionInfo)
-    case logoutOfSession(UserSessionInfo)
-    case showCurrentSessionOverview(sessionInfo: UserSessionInfo)
-    case showUserSessionOverview(sessionInfo: UserSessionInfo)
-    case linkDevice
-    case logoutFromUserSessions(sessionInfos: [UserSessionInfo])
+    case showCurrentSessionDetails
+    case showAllOtherSessions
+    case showUserSessionDetails(_ sessionId: String)
 }
 
 // MARK: View
 
 struct UserSessionsOverviewViewState: BindableState {
+    
+    var unverifiedSessionsViewData: [UserSessionListItemViewData]
+    
+    var inactiveSessionsViewData: [UserSessionListItemViewData]
+    
     var currentSessionViewData: UserSessionCardViewData?
-    var unverifiedSessionsViewData = [UserSessionListItemViewData]()
-    var inactiveSessionsViewData = [UserSessionListItemViewData]()
-    var otherSessionsViewData = [UserSessionListItemViewData]()
-    var showLoadingIndicator = false
-    var linkDeviceButtonVisible = false
-    var showLocationInfo: Bool
+    
+    var otherSessionsViewData: [UserSessionListItemViewData]
+    
+    var showLoadingIndicator: Bool = false
 }
 
 enum UserSessionsOverviewViewAction {
     case viewAppeared
     case verifyCurrentSession
-    case renameCurrentSession
-    case logoutOfCurrentSession
     case viewCurrentSessionDetails
     case viewAllUnverifiedSessions
     case viewAllInactiveSessions
     case viewAllOtherSessions
     case tapUserSession(_ sessionId: String)
-    case linkDevice
-    case logoutOtherSessions
-    case showLocationInfo
 }

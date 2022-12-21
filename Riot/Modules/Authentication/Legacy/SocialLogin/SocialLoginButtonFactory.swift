@@ -50,10 +50,10 @@ class SocialLoginButtonFactory {
             let idpBrand = MXLoginSSOIdentityProviderBrand(rawValue: idpBrandIdentifier)
 
             switch idpBrand {
-            case .gitlab:
-                (defaultStyle, styles) = self.buildGitLabButtonStyles()
-            case .github:
-                (defaultStyle, styles) = self.buildGitHubButtonStyles()
+//            case .gitlab:
+//                (defaultStyle, styles) = self.buildGitLabButtonStyles()
+//            case .github:
+//                (defaultStyle, styles) = self.buildGitHubButtonStyles()
             case .apple:
                 (defaultStyle, styles) = self.buildAppleButtonStyles()
             case .google:

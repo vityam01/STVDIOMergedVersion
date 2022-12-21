@@ -23,6 +23,7 @@ struct RoomAccessTypeChooserCoordinatorParameters {
 }
 
 final class RoomAccessTypeChooserCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -69,10 +70,10 @@ final class RoomAccessTypeChooserCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        roomAccessTypeChooserHostingController
+        return self.roomAccessTypeChooserHostingController
     }
     
     func handleRoomUpgradeResult(_ result: RoomUpgradeCoordinatorResult) {
-        roomAccessTypeChooserViewModel.handleRoomUpgradeResult(result)
+        self.roomAccessTypeChooserViewModel.handleRoomUpgradeResult(result)
     }
 }

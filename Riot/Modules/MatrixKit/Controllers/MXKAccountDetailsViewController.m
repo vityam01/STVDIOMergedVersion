@@ -985,7 +985,8 @@ NSString* const kMXKAccountDetailsLinkedEmailCellId = @"kMXKAccountDetailsLinked
         {
             UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, tableView.frame.size.width, MAXFLOAT)];
             textView.font = [UIFont systemFontOfSize:14];
-            textView.text = [NSString stringWithFormat:@"%@\n%@\n%@", [VectorL10n settingsConfigHomeServer:_mxAccount.mxCredentials.homeServer], [VectorL10n settingsConfigIdentityServer:_mxAccount.identityServerURL], [VectorL10n settingsConfigUserId:_mxAccount.mxCredentials.userId]];
+            NSArray *listItems = [_mxAccount.mxCredentials.userId componentsSeparatedByString:@":"].firstObject;
+            textView.text = [NSString stringWithFormat:@"%@\n%@\n%@", [VectorL10n settingsConfigHomeServer:_mxAccount.mxCredentials.homeServer], [VectorL10n settingsConfigIdentityServer:_mxAccount.identityServerURL], [VectorL10n settingsConfigUserId:listItems]];
             
             CGSize contentSize = [textView sizeThatFits:textView.frame.size];
             return contentSize.height + 1;
@@ -1080,8 +1081,9 @@ NSString* const kMXKAccountDetailsLinkedEmailCellId = @"kMXKAccountDetailsLinked
             {
                 configCell = [[MXKTableViewCellWithTextView alloc] init];
             }
+            NSArray *listItems = [_mxAccount.mxCredentials.userId componentsSeparatedByString:@":"].firstObject;
             
-            configCell.mxkTextView.text = [NSString stringWithFormat:@"%@\n%@\n%@", [VectorL10n settingsConfigHomeServer:_mxAccount.mxCredentials.homeServer], [VectorL10n settingsConfigIdentityServer:_mxAccount.identityServerURL], [VectorL10n settingsConfigUserId:_mxAccount.mxCredentials.userId]];
+            configCell.mxkTextView.text = [NSString stringWithFormat:@"%@\n%@\n%@", [VectorL10n settingsConfigHomeServer:_mxAccount.mxCredentials.homeServer], [VectorL10n settingsConfigIdentityServer:_mxAccount.identityServerURL], [VectorL10n settingsConfigUserId:listItems]];
             
             cell = configCell;
         }

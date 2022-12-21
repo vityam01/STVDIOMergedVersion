@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,12 @@
 // limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 import MatrixSDK
 
 class SpaceSelectorService: SpaceSelectorServiceProtocol {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -64,7 +65,7 @@ class SpaceSelectorService: SpaceSelectorServiceProtocol {
 
         var itemList: [SpaceSelectorListItemData] = []
         itemList.append(contentsOf: invitedSpaces)
-        if showHomeSpace, parentSpaceId == nil {
+        if showHomeSpace && parentSpaceId == nil {
             itemList.append(SpaceSelectorListItemData(id: SpaceSelectorConstants.homeSpaceId, icon: Asset.Images.sideMenuActionIconFeedback.image, displayName: VectorL10n.allChatsTitle, isJoined: true))
         }
         itemList.append(contentsOf: joinedSpaces)
@@ -92,14 +93,14 @@ class SpaceSelectorService: SpaceSelectorServiceProtocol {
         self.session = session
         self.parentSpaceId = parentSpaceId
         self.showHomeSpace = showHomeSpace
-        spaceListSubject = CurrentValueSubject([])
-        parentSpaceNameSubject = CurrentValueSubject(nil)
+        self.spaceListSubject = CurrentValueSubject([])
+        self.parentSpaceNameSubject = CurrentValueSubject(nil)
         self.selectedSpaceId = selectedSpaceId
 
         spaceListSubject.send(spaceList)
         parentSpaceNameSubject.send(parentSpaceName)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(spaceServiceDidUpdate), name: MXSpaceService.didBuildSpaceGraph, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.spaceServiceDidUpdate), name: MXSpaceService.didBuildSpaceGraph, object: nil)
     }
     
     @objc private func spaceServiceDidUpdate() {
@@ -107,7 +108,7 @@ class SpaceSelectorService: SpaceSelectorServiceProtocol {
     }
 }
 
-private extension SpaceSelectorListItemData {
+fileprivate extension SpaceSelectorListItemData {
     static func itemData(with space: MXSpace, notificationCounter: MXSpaceNotificationCounter) -> SpaceSelectorListItemData? {
         guard let summary = space.summary else {
             return nil
@@ -115,7 +116,7 @@ private extension SpaceSelectorListItemData {
         
         let notificationState = notificationCounter.notificationState(forSpaceWithId: space.spaceId)
         
-        return SpaceSelectorListItemData(id: summary.roomId,
+        return SpaceSelectorListItemData(id:summary.roomId,
                                          avatar: summary.room.avatarData,
                                          displayName: summary.displayname,
                                          notificationCount: notificationState?.groupMissedDiscussionsCount ?? 0,

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import Combine
-import DesignKit
 import Foundation
 import MatrixSDK
+import Combine
+import DesignKit
 
 enum AvatarServiceError: Error {
     case pathNotfound
@@ -25,6 +25,7 @@ enum AvatarServiceError: Error {
 }
 
 class AvatarService: AvatarServiceProtocol {
+    
     private enum Constants {
         static let mimeType = "image/jpeg"
         static let thumbnailMethod = MXThumbnailingMethodCrop
@@ -33,7 +34,7 @@ class AvatarService: AvatarServiceProtocol {
     private let mediaManager: MXMediaManager
     
     static func instantiate(mediaManager: MXMediaManager) -> AvatarServiceProtocol {
-        AvatarService(mediaManager: mediaManager)
+        return AvatarService(mediaManager: mediaManager)
     }
     
     init(mediaManager: MXMediaManager) {
@@ -48,13 +49,13 @@ class AvatarService: AvatarServiceProtocol {
     ///   - avatarSize: The size of avatar to retrieve as defined in the DesignKit spec.
     /// - Returns: A Future of UIImage that returns an error if it fails to fetch the image.
     func avatarImage(mxContentUri: String, avatarSize: AvatarSize) -> Future<UIImage, Error> {
+        
         let cachePath = MXMediaManager.thumbnailCachePath(
             forMatrixContentURI: mxContentUri,
             andType: Constants.mimeType,
-            inFolder: nil,
+            inFolder: nil, 
             toFitViewSize: avatarSize.size,
-            with: Constants.thumbnailMethod
-        )
+            with: Constants.thumbnailMethod)
         
         return Future<UIImage, Error> { promise in
             if let image = MXMediaManager.loadThroughCache(withFilePath: cachePath),
@@ -68,8 +69,7 @@ class AvatarService: AvatarServiceProtocol {
                 withType: Constants.mimeType,
                 inFolder: nil,
                 toFitViewSize: avatarSize.size,
-                with: Constants.thumbnailMethod
-            ) { path in
+                with: Constants.thumbnailMethod) { path in
                 guard let path = path else {
                     promise(.failure(AvatarServiceError.pathNotfound))
                     return

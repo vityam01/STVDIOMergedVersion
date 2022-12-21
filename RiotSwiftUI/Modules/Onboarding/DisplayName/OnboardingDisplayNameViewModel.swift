@@ -14,12 +14,15 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
-typealias OnboardingDisplayNameViewModelType = StateStoreViewModel<OnboardingDisplayNameViewState, OnboardingDisplayNameViewAction>
+typealias OnboardingDisplayNameViewModelType = StateStoreViewModel<OnboardingDisplayNameViewState,
+                                                                   Never,
+                                                                   OnboardingDisplayNameViewAction>
 
 class OnboardingDisplayNameViewModel: OnboardingDisplayNameViewModelType, OnboardingDisplayNameViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Private

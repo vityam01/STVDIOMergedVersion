@@ -14,11 +14,12 @@
 // limitations under the License.
 //
 
-import CommonKit
 import SwiftUI
+import CommonKit
 
 /// All Chats onboarding screen
 final class AllChatsOnboardingCoordinator: NSObject, Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -41,8 +42,8 @@ final class AllChatsOnboardingCoordinator: NSObject, Coordinator, Presentable {
         let viewModel = AllChatsOnboardingViewModel.makeAllChatsOnboardingViewModel()
         let view = AllChatsOnboarding(viewModel: viewModel.context)
         self.viewModel = viewModel
-        hostingController = VectorHostingController(rootView: view)
-        indicatorPresenter = UserIndicatorTypePresenter(presentingViewController: hostingController)
+        self.hostingController = VectorHostingController(rootView: view)
+        self.indicatorPresenter = UserIndicatorTypePresenter(presentingViewController: hostingController)
         
         super.init()
         
@@ -64,7 +65,7 @@ final class AllChatsOnboardingCoordinator: NSObject, Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        hostingController
+        return self.hostingController
     }
     
     // MARK: - Private
@@ -86,7 +87,9 @@ final class AllChatsOnboardingCoordinator: NSObject, Coordinator, Presentable {
 // MARK: - UIAdaptivePresentationControllerDelegate
 
 extension AllChatsOnboardingCoordinator: UIAdaptivePresentationControllerDelegate {
+    
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         completion?()
     }
+    
 }
