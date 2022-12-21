@@ -17,76 +17,93 @@
 import SwiftUI
 
 struct UserSessionListItem: View {
-    
-    // MARK: - Constants
-    
-    private enum LayoutConstants {
-        static let horizontalPadding: CGFloat = 15
-        static let verticalPadding: CGFloat = 16
-        static let avatarWidth: CGFloat = 40
-        static let avatarRightMargin: CGFloat = 18
-    }
-    
-    // MARK: - Properties
-    
-    // MARK: Private
-    
     @Environment(\.theme) private var theme: ThemeSwiftUI
-
-    // MARK: Public
     
     let viewData: UserSessionListItemViewData
+    let showsLocationInfo: Bool
     
-    var onBackgroundTap: ((String) -> (Void))? = nil
-    
-    // MARK: - Body
+    var isSeparatorHidden = false
+    var isEditModeEnabled = false
+    var onBackgroundTap: ((String) -> Void)?
+    var onBackgroundLongPress: ((String) -> Void)?
     
     var body: some View {
-        Button(action: { onBackgroundTap?(self.viewData.sessionId)
-        }) {
-            VStack(alignment: .leading, spacing: LayoutConstants.verticalPadding) {
-                HStack(spacing: LayoutConstants.avatarRightMargin) {
-                    DeviceAvatarView(viewData: viewData.deviceAvatarViewData)
-                    VStack(alignment: .leading, spacing: 2) {
+        Button { } label: {
+            ZStack {
+                if viewData.isSelected {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(theme.colors.system)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(4)
+                }
+                HStack {
+                    if isEditModeEnabled {
+                        Image(viewData.isSelected ? Asset.Images.userSessionListItemSelected.name : Asset.Images.userSessionListItemNotSelected.name)
+                    }
+                    DeviceAvatarView(viewData: viewData.deviceAvatarViewData, isSelected: viewData.isSelected)
+                    VStack(alignment: .leading, spacing: 0) {
                         Text(viewData.sessionName)
                             .font(theme.fonts.bodySB)
                             .foregroundColor(theme.colors.primaryContent)
                             .multilineTextAlignment(.leading)
-                        
-                        Text(viewData.sessionDetails)
+                            .padding(.top, 16)
+                            .padding(.bottom, 2)
+                            .padding(.trailing, 16)
+                        HStack {
+                            if let sessionDetailsIcon = viewData.sessionDetailsIcon {
+                                Image(sessionDetailsIcon)
+                                    .padding(.leading, 2)
+                            }
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(viewData.sessionDetails)
+                                
+                                if showsLocationInfo, let ipText = ipText {
+                                    Text(ipText)
+                                }
+                            }
                             .font(theme.fonts.caption1)
                             .foregroundColor(theme.colors.secondaryContent)
                             .multilineTextAlignment(.leading)
+                        }
+                        .padding(.bottom, 16)
+                        .padding(.trailing, 16)
+                        SeparatorLine()
+                            .isHidden(isSeparatorHidden)
                     }
+                    .padding(.leading, 7)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, LayoutConstants.horizontalPadding)
-                
-                // Separator
-                // Note: Separator leading is matching the text leading, we could use alignment guide in the future
-                Rectangle()
-                    .fill(theme.colors.quinaryContent)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .frame(height: 1.0)
-                    .padding(.leading, LayoutConstants.horizontalPadding + LayoutConstants.avatarRightMargin + LayoutConstants.avatarWidth)
+                .padding(.leading, 16)
             }
-            .padding(.top, LayoutConstants.verticalPadding)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onBackgroundTap?(viewData.sessionId)
+            }
+            .onLongPressGesture {
+                onBackgroundLongPress?(viewData.sessionId)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("UserSessionListItem_\(viewData.sessionId)")
+    }
+    
+    private var ipText: String? {
+        guard let lastSeenIp = viewData.lastSeenIP, !lastSeenIp.isEmpty else {
+            return nil
+        }
+        return viewData.lastSeenIPLocation.map { "\(lastSeenIp) (\($0))" } ?? lastSeenIp
     }
 }
 
 struct UserSessionListPreview: View {
-    
     let userSessionsOverviewService: UserSessionsOverviewServiceProtocol = MockUserSessionsOverviewService()
+    var isEditModeEnabled = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(userSessionsOverviewService.lastOverviewData.otherSessionsInfo) { userSessionInfo in
-                let viewData = UserSessionListItemViewData(userSessionInfo: userSessionInfo)
-
-                UserSessionListItem(viewData: viewData, onBackgroundTap: { sessionId in
-
+            ForEach(userSessionsOverviewService.otherSessions) { userSessionInfo in
+                let viewData = UserSessionListItemViewDataFactory().create(from: userSessionInfo)
+                UserSessionListItem(viewData: viewData, showsLocationInfo: true, isEditModeEnabled: isEditModeEnabled, onBackgroundTap: { _ in
                 })
             }
         }
@@ -98,6 +115,8 @@ struct UserSessionListItem_Previews: PreviewProvider {
         Group {
             UserSessionListPreview().theme(.light).preferredColorScheme(.light)
             UserSessionListPreview().theme(.dark).preferredColorScheme(.dark)
+            UserSessionListPreview(isEditModeEnabled: true).theme(.light).preferredColorScheme(.light)
+            UserSessionListPreview(isEditModeEnabled: true).theme(.dark).preferredColorScheme(.dark)
         }
     }
 }

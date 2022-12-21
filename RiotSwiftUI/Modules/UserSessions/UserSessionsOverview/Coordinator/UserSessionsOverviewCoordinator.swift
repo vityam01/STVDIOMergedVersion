@@ -14,43 +14,36 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import CommonKit
+import SwiftUI
 
 struct UserSessionsOverviewCoordinatorParameters {
     let session: MXSession
+    let service: UserSessionsOverviewService
 }
 
 final class UserSessionsOverviewCoordinator: Coordinator, Presentable {
-    
-    // MARK: - Properties
-    
-    // MARK: Private
-    
     private let parameters: UserSessionsOverviewCoordinatorParameters
-    private let userSessionsOverviewHostingController: UIViewController
-    private var userSessionsOverviewViewModel: UserSessionsOverviewViewModelProtocol
-    
+    private let hostingViewController: UIViewController
+    private var viewModel: UserSessionsOverviewViewModelProtocol
+    private let service: UserSessionsOverviewService
+
     private var indicatorPresenter: UserIndicatorTypePresenterProtocol
     private var loadingIndicator: UserIndicator?
     
-    // MARK: Public
-
     // Must be used only internally
     var childCoordinators: [Coordinator] = []
-    var completion: (() -> Void)?
-    
-    // MARK: - Setup
-    
+    var completion: ((UserSessionsOverviewCoordinatorResult) -> Void)?
+
     init(parameters: UserSessionsOverviewCoordinatorParameters) {
         self.parameters = parameters
-        let viewModel = UserSessionsOverviewViewModel(userSessionsOverviewService: UserSessionsOverviewService(mxSession: parameters.session))
-        let view = UserSessionsOverview(viewModel: viewModel.context)
-        userSessionsOverviewViewModel = viewModel
+        service = parameters.service
         
-        let hostingViewController = VectorHostingController(rootView: view)
+        viewModel = UserSessionsOverviewViewModel(userSessionsOverviewService: parameters.service, settingsService: RiotSettings.shared)
         
-        userSessionsOverviewHostingController = hostingViewController
+        hostingViewController = VectorHostingController(rootView: UserSessionsOverview(viewModel: viewModel.context))
+        hostingViewController.vc_setLargeTitleDisplayMode(.never)
+        hostingViewController.vc_removeBackTitle()
         
         indicatorPresenter = UserIndicatorTypePresenter(presentingViewController: hostingViewController)
     }
@@ -59,30 +52,37 @@ final class UserSessionsOverviewCoordinator: Coordinator, Presentable {
     
     func start() {
         MXLog.debug("[UserSessionsOverviewCoordinator] did start.")
-        userSessionsOverviewViewModel.completion = { [weak self] result in
+        viewModel.completion = { [weak self] result in
             guard let self = self else { return }
             MXLog.debug("[UserSessionsOverviewCoordinator] UserSessionsOverviewViewModel did complete with result: \(result).")
+            
             switch result {
-            case .cancel:
-                self.completion?()
-            case .showAllUnverifiedSessions:
-                self.showAllUnverifiedSessions()
-            case .showAllInactiveSessions:
-                self.showAllInactiveSessions()
+            case let .showOtherSessions(sessionInfos: sessionInfos, filter: filter):
+                self.showOtherSessions(sessionInfos: sessionInfos, filterBy: filter)
             case .verifyCurrentSession:
-                self.startVerifyCurrentSession()
-            case .showCurrentSessionDetails:
-                self.showCurrentSessionDetails()
-            case .showAllOtherSessions:
-                self.showAllOtherSessions()
-            case .showUserSessionDetails(let sessionId):
-                self.showUserSessionDetails(sessionId: sessionId)
+                self.completion?(.verifyCurrentSession)
+            case .renameSession(let sessionInfo):
+                self.completion?(.renameSession(sessionInfo))
+            case .logoutOfSession(let sessionInfo):
+                self.completion?(.logoutOfSession(sessionInfo))
+            case let .showCurrentSessionOverview(sessionInfo):
+                self.showCurrentSessionOverview(sessionInfo: sessionInfo)
+            case let .showUserSessionOverview(sessionInfo):
+                self.showUserSessionOverview(sessionInfo: sessionInfo)
+            case .linkDevice:
+                self.completion?(.linkDevice)
+            case let .logoutFromUserSessions(sessionInfos: sessionInfos):
+                self.completion?(.logoutFromUserSessions(sessionInfos: sessionInfos))
             }
         }
     }
     
     func toPresentable() -> UIViewController {
-        return self.userSessionsOverviewHostingController
+        hostingViewController
+    }
+    
+    func refreshData() {
+        viewModel.context.send(viewAction: .viewAppeared)
     }
     
     // MARK: - Private
@@ -100,27 +100,19 @@ final class UserSessionsOverviewCoordinator: Coordinator, Presentable {
         loadingIndicator = nil
     }
     
-    private func showAllUnverifiedSessions() {
-        // TODO
-    }
-    
-    private func showAllInactiveSessions() {
-        // TODO
+    private func showOtherSessions(sessionInfos: [UserSessionInfo], filterBy filter: UserOtherSessionsFilter) {
+        completion?(.openOtherSessions(sessionInfos: sessionInfos, filter: filter))
     }
     
     private func startVerifyCurrentSession() {
-        // TODO
+        // TODO:
     }
     
-    private func showCurrentSessionDetails() {
-        // TODO
+    private func showCurrentSessionOverview(sessionInfo: UserSessionInfo) {
+        completion?(.openSessionOverview(sessionInfo: sessionInfo))
     }
     
-    private func showUserSessionDetails(sessionId: String) {
-        // TODO
-    }
-    
-    private func showAllOtherSessions() {
-        // TODO
+    private func showUserSessionOverview(sessionInfo: UserSessionInfo) {
+        completion?(.openSessionOverview(sessionInfo: sessionInfo))
     }
 }

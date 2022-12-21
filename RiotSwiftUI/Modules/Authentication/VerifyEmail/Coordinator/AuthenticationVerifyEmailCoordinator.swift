@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import CommonKit
+import SwiftUI
 
 struct AuthenticationVerifyEmailCoordinatorParameters {
     let registrationWizard: RegistrationWizard
@@ -24,7 +24,6 @@ struct AuthenticationVerifyEmailCoordinatorParameters {
 }
 
 final class AuthenticationVerifyEmailCoordinator: Coordinator, Presentable {
-    
     // MARK: - Properties
     
     // MARK: Private
@@ -74,7 +73,7 @@ final class AuthenticationVerifyEmailCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        return self.authenticationVerifyEmailHostingController
+        authenticationVerifyEmailHostingController
     }
     
     // MARK: - Private
@@ -191,7 +190,8 @@ final class AuthenticationVerifyEmailCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            authenticationVerifyEmailViewModel.displayError(.mxError(mxError.error))
+            let message = mxError.authenticationErrorMessage()
+            authenticationVerifyEmailViewModel.displayError(.mxError(message))
             return
         }
         

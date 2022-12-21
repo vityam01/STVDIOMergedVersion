@@ -33,6 +33,7 @@ targets:
 
     dependencies:
     - sdk: Intents.framework
+    - package: DeviceKit
 
     configFiles:
       Debug: Debug.xcconfig
@@ -63,3 +64,4 @@ targets:
       excludes:
         - "**/*.md" # excludes all files with the .md extension
     - path: ../Riot/Modules/Room/TimelineCells/Styles/RoomTimelineStyleIdentifier.swift
+    - path: ../Riot/Modules/VoiceBroadcast/VoiceBroadcastSDK/VoiceBroadcastSettings.swift
