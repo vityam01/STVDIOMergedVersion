@@ -63,9 +63,13 @@ extension DeviceVerificationStartCoordinator: DeviceVerificationStartViewModelCo
     func deviceVerificationStartViewModelDidUseLegacyVerification(_ viewModel: DeviceVerificationStartViewModelType) {
         self.delegate?.deviceVerificationStartCoordinatorDidCancel(self) 
     }
-    
-    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, otherDidAcceptRequest request: MXKeyVerificationRequest) {
-        self.delegate?.deviceVerificationStartCoordinator(self, otherDidAcceptRequest: request)
+
+    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, didCompleteWithOutgoingTransaction transaction: MXSASTransaction) {
+        self.delegate?.deviceVerificationStartCoordinator(self, didCompleteWithOutgoingTransaction: transaction)
+    }
+
+    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, didTransactionCancelled transaction: MXSASTransaction) {
+        self.delegate?.deviceVerificationStartCoordinator(self, didTransactionCancelled: transaction)
     }
     
     func deviceVerificationStartViewModelDidCancel(_ viewModel: DeviceVerificationStartViewModelType) {

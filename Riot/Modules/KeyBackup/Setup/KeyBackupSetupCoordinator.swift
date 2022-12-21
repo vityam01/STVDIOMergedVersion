@@ -66,7 +66,7 @@ final class KeyBackupSetupCoordinator: KeyBackupSetupCoordinatorType {
     
     private func createSetupIntroViewController() -> KeyBackupSetupIntroViewController {
         
-        let backupState = self.session.crypto?.backup?.state ?? MXKeyBackupStateUnknown
+        let backupState = self.session.crypto.backup?.state ?? MXKeyBackupStateUnknown
         let isABackupAlreadyExists: Bool
         
         switch backupState {
@@ -99,12 +99,7 @@ final class KeyBackupSetupCoordinator: KeyBackupSetupCoordinatorType {
     }
     
     private func showSetupPassphrase(animated: Bool) {
-        guard let keyBackup = self.session.crypto?.backup else {
-            MXLog.failure("[KeyBackupSetupCoordinator] Cannot setup backups without backup module")
-            return
-        }
-        
-        let keyBackupSetupPassphraseCoordinator = KeyBackupSetupPassphraseCoordinator(keyBackup: keyBackup)
+        let keyBackupSetupPassphraseCoordinator = KeyBackupSetupPassphraseCoordinator(session: self.session)
         keyBackupSetupPassphraseCoordinator.delegate = self
         keyBackupSetupPassphraseCoordinator.start()
         
@@ -135,7 +130,7 @@ final class KeyBackupSetupCoordinator: KeyBackupSetupCoordinatorType {
     }
     
     private func createKeyBackupUsingSecureBackup(privateKey: Data, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let keyBackup = session.crypto?.backup, let recoveryService = session.crypto?.recoveryService else {
+        guard let keyBackup = session.crypto.backup, let recoveryService = session.crypto.recoveryService else {
             return
         }
         

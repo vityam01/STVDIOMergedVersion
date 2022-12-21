@@ -38,7 +38,7 @@ final class DeviceVerificationIncomingCoordinator: DeviceVerificationIncomingCoo
     
     // MARK: - Setup
     
-    init(session: MXSession, otherUser: MXUser, transaction: MXSASTransaction) {
+    init(session: MXSession, otherUser: MXUser, transaction: MXIncomingSASTransaction) {
         self.session = session
         
         let deviceVerificationIncomingViewModel = DeviceVerificationIncomingViewModel(session: self.session, otherUser: otherUser, transaction: transaction)

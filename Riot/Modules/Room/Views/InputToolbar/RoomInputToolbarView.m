@@ -19,6 +19,7 @@
 
 #import "ThemeService.h"
 #import "GeneratedInterface-Swift.h"
+#import "GBDeviceInfo_iOS.h"
 
 static const CGFloat kContextBarHeight = 24;
 static const CGFloat kActionMenuAttachButtonSpringVelocity = 7;
@@ -58,7 +59,7 @@ static const NSTimeInterval kActionMenuComposerHeightAnimationDuration = .3;
 @implementation RoomInputToolbarView
 @dynamic delegate;
 
-+ (MXKRoomInputToolbarView *)instantiateRoomInputToolbarView
++ (instancetype)roomInputToolbarView
 {
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([RoomInputToolbarView class]) bundle:nil];
     return [nib instantiateWithOwner:nil options:nil].firstObject;
@@ -82,6 +83,25 @@ static const NSTimeInterval kActionMenuComposerHeightAnimationDuration = .3;
 
     inputAccessoryViewForKeyboard = [[UIView alloc] initWithFrame:CGRectZero];
     self.textView.inputAccessoryView = inputAccessoryViewForKeyboard;
+}
+
+- (void)setVoiceMessageToolbarView:(UIView *)voiceMessageToolbarView
+{
+    if (voiceMessageToolbarView) {
+        _voiceMessageToolbarView = voiceMessageToolbarView;
+        self.voiceMessageToolbarView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:self.voiceMessageToolbarView];
+
+        [NSLayoutConstraint activateConstraints:@[[self.mainToolbarView.topAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.topAnchor],
+                                                  [self.mainToolbarView.leftAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.leftAnchor],
+                                                  [self.mainToolbarView.bottomAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.bottomAnchor],
+                                                  [self.mainToolbarView.rightAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.rightAnchor]]];
+    }
+    else
+    {
+        [self.voiceMessageToolbarView removeFromSuperview];
+        _voiceMessageToolbarView = nil;
+    }
 }
 
 #pragma mark - Override MXKView
@@ -280,6 +300,69 @@ static const NSTimeInterval kActionMenuComposerHeightAnimationDuration = .3;
     }
 }
 
+- (void)updatePlaceholder
+{
+    // Consider the default placeholder
+    
+    NSString *placeholder;
+    
+    // Check the device screen size before using large placeholder
+    BOOL shouldDisplayLargePlaceholder = [GBDeviceInfo deviceInfo].family == GBDeviceFamilyiPad || [GBDeviceInfo deviceInfo].displayInfo.display >= GBDeviceDisplay5p8Inch;
+    
+    if (!shouldDisplayLargePlaceholder)
+    {
+        switch (_sendMode)
+        {
+            case RoomInputToolbarViewSendModeReply:
+                placeholder = [VectorL10n roomMessageReplyToShortPlaceholder];
+                break;
+                
+            case RoomInputToolbarViewSendModeCreateDM:
+                placeholder = [VectorL10n roomFirstMessagePlaceholder];
+                break;
+
+            default:
+                placeholder = [VectorL10n roomMessageShortPlaceholder];
+                break;
+        }
+    }
+    else
+    {
+        if (_isEncryptionEnabled)
+        {
+            switch (_sendMode)
+            {
+                case RoomInputToolbarViewSendModeReply:
+                    placeholder = [VectorL10n encryptedRoomMessageReplyToPlaceholder];
+                    break;
+
+                default:
+                    placeholder = [VectorL10n encryptedRoomMessagePlaceholder];
+                    break;
+            }
+        }
+        else
+        {
+            switch (_sendMode)
+            {
+                case RoomInputToolbarViewSendModeReply:
+                    placeholder = [VectorL10n roomMessageReplyToPlaceholder];
+                    break;
+
+                case RoomInputToolbarViewSendModeCreateDM:
+                    placeholder = [VectorL10n roomFirstMessagePlaceholder];
+                    break;
+                    
+                default:
+                    placeholder = [VectorL10n roomMessagePlaceholder];
+                    break;
+            }
+        }
+    }
+    
+    self.placeholder = placeholder;
+}
+
 - (void)setPlaceholder:(NSString *)inPlaceholder
 {
     [super setPlaceholder:inPlaceholder];
@@ -460,28 +543,4 @@ static const NSTimeInterval kActionMenuComposerHeightAnimationDuration = .3;
     }];
 }
 
-#pragma mark - RoomInputToolbarViewProtocol
-
-- (CGFloat)toolbarHeight {
-    return self.mainToolbarHeightConstraint.constant;
-}
-
-- (void)setVoiceMessageToolbarView:(UIView *)voiceMessageToolbarView
-{
-    if (voiceMessageToolbarView) {
-        _voiceMessageToolbarView = voiceMessageToolbarView;
-        self.voiceMessageToolbarView.translatesAutoresizingMaskIntoConstraints = NO;
-        [self addSubview:self.voiceMessageToolbarView];
-
-        [NSLayoutConstraint activateConstraints:@[[self.mainToolbarView.topAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.topAnchor],
-                                                  [self.mainToolbarView.leftAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.leftAnchor],
-                                                  [self.mainToolbarView.bottomAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.bottomAnchor],
-                                                  [self.mainToolbarView.rightAnchor constraintEqualToAnchor:self.voiceMessageToolbarView.rightAnchor]]];
-    }
-    else
-    {
-        [self.voiceMessageToolbarView removeFromSuperview];
-        _voiceMessageToolbarView = nil;
-    }
-}
 @end

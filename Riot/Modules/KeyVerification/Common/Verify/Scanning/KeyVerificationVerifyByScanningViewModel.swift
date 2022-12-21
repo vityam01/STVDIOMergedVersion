@@ -102,7 +102,7 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
         
         self.update(viewState: .loaded(viewData: viewData))
         
-        self.registerDidStateChangeNotification()
+        self.registerTransactionDidStateChangeNotification()
     }
     
     private func canShowScanAction(from verificationMethods: [String]) -> Bool {
@@ -112,7 +112,7 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
     private func cancel() {
         self.cancelQRCodeTransaction()
         self.keyVerificationRequest.cancel(with: MXTransactionCancelCode.user(), success: nil, failure: nil)
-        self.unregisterDidStateChangeNotification()
+        self.unregisterTransactionDidStateChangeNotification()
         self.coordinatorDelegate?.keyVerificationVerifyByScanningViewModelDidCancel(self)
     }
     
@@ -148,7 +148,7 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
             return
         }
         
-        self.unregisterDidStateChangeNotification()
+        self.unregisterTransactionDidStateChangeNotification()
         self.coordinatorDelegate?.keyVerificationVerifyByScanningViewModel(self, didScanOtherQRCodeData: scannedQRCodeData, withTransaction: qrCodeTransaction)
     }    
     
@@ -172,11 +172,10 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
             
                 // Remove pending QR code transaction, as we are going to use SAS verification
                 self.removePendingQRCodeTransaction()
-
-                // Check due to legacy implementation of key verification which could pass incorrect type of transaction
-                if keyVerificationTransaction is MXIncomingSASTransaction {
+            
+                if keyVerificationTransaction is MXSASTransaction == false || keyVerificationTransaction.isIncoming {
                     MXLog.debug("[KeyVerificationVerifyByScanningViewModel] SAS transaction should be outgoing")
-                    self.unregisterDidStateChangeNotification()
+                    self.unregisterTransactionDidStateChangeNotification()
                     self.update(viewState: .error(KeyVerificationVerifyByScanningViewModelError.unknown))
                 }
             
@@ -191,25 +190,12 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
     
     // MARK: - MXKeyVerificationTransactionDidChange
     
-    private func registerDidStateChangeNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(requestDidStateChange(notification:)), name: .MXKeyVerificationRequestDidChange, object: nil)
+    private func registerTransactionDidStateChangeNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(transactionDidStateChange(notification:)), name: .MXKeyVerificationTransactionDidChange, object: nil)
     }
     
-    private func unregisterDidStateChangeNotification() {
-        NotificationCenter.default.removeObserver(self, name: .MXKeyVerificationRequestDidChange, object: nil)
+    private func unregisterTransactionDidStateChangeNotification() {
         NotificationCenter.default.removeObserver(self, name: .MXKeyVerificationTransactionDidChange, object: nil)
-    }
-    
-    @objc private func requestDidStateChange(notification: Notification) {
-        guard let request = notification.object as? MXKeyVerificationRequest else {
-            return
-        }
-        
-        if request.state == MXKeyVerificationRequestStateCancelled, let reason = request.reasonCancelCode {
-            self.unregisterDidStateChangeNotification()
-            self.update(viewState: .cancelled(cancelCode: reason, verificationKind: verificationKind))
-        }
     }
     
     @objc private func transactionDidStateChange(notification: Notification) {
@@ -232,19 +218,19 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
     private func sasTransactionDidStateChange(_ transaction: MXSASTransaction) {
         switch transaction.state {
         case MXSASTransactionStateShowSAS:
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.coordinatorDelegate?.keyVerificationVerifyByScanningViewModel(self, didStartSASVerificationWithTransaction: transaction)
         case MXSASTransactionStateCancelled:
             guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelled(cancelCode: reason, verificationKind: verificationKind))
         case MXSASTransactionStateCancelledByMe:
             guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelledByMe(reason))
         default:
             break
@@ -255,22 +241,22 @@ final class KeyVerificationVerifyByScanningViewModel: KeyVerificationVerifyBySca
         switch transaction.state {
         case .verified:
             // Should not happen
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.coordinatorDelegate?.keyVerificationVerifyByScanningViewModelDidCancel(self)
         case .qrScannedByOther:
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.coordinatorDelegate?.keyVerificationVerifyByScanningViewModel(self, qrCodeDidScannedByOtherWithTransaction: transaction)
         case .cancelled:
             guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelled(cancelCode: reason, verificationKind: verificationKind))
         case .cancelledByMe:
             guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterDidStateChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelledByMe(reason))
         default:
             break

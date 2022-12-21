@@ -18,6 +18,10 @@
 
 import Foundation
 
+enum UserVerificationSessionsStatusViewModelError: Error {
+    case unknown
+}
+
 final class UserVerificationSessionsStatusViewModel: UserVerificationSessionsStatusViewModelType {
     
     // MARK: - Properties
@@ -99,7 +103,7 @@ final class UserVerificationSessionsStatusViewModel: UserVerificationSessionsSta
     }
     
     private func getDevicesFromCache(for userId: String) -> [MXDeviceInfo] {
-        guard let deviceInfoMap = self.session.crypto?.devices(forUser: self.userId) else {
+        guard let deviceInfoMap = self.session.crypto.devices(forUser: self.userId) else {
             return []
         }
         return Array(deviceInfoMap.values)
@@ -124,7 +128,9 @@ final class UserVerificationSessionsStatusViewModel: UserVerificationSessionsSta
             completion(.success(sessionsViewData))
             
         }, failure: { error in
-            completion(.failure(error))
+            
+            let finalError = error ?? UserVerificationSessionsStatusViewModelError.unknown
+            completion(.failure(finalError))
         })
         
         return httpOperation
