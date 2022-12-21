@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,15 @@
 // limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 
 class MockRoomAccessTypeChooserService: RoomAccessTypeChooserServiceProtocol {
+    
     static let mockAccessItems: [RoomAccessTypeChooserAccessItem] = [
         RoomAccessTypeChooserAccessItem(id: .private, isSelected: true, title: VectorL10n.private, detail: VectorL10n.roomAccessSettingsScreenPrivateMessage, badgeText: nil),
         RoomAccessTypeChooserAccessItem(id: .restricted, isSelected: false, title: VectorL10n.createRoomTypeRestricted, detail: VectorL10n.roomAccessSettingsScreenRestrictedMessage, badgeText: VectorL10n.roomAccessSettingsScreenUpgradeRequired),
-        RoomAccessTypeChooserAccessItem(id: .public, isSelected: false, title: VectorL10n.public, detail: VectorL10n.roomAccessSettingsScreenPublicMessage, badgeText: nil)
+        RoomAccessTypeChooserAccessItem(id: .public, isSelected: false, title: VectorL10n.public, detail: VectorL10n.roomAccessSettingsScreenPublicMessage, badgeText: nil),
     ]
     
     private(set) var accessItemsSubject: CurrentValueSubject<[RoomAccessTypeChooserAccessItem], Never>
@@ -30,9 +31,9 @@ class MockRoomAccessTypeChooserService: RoomAccessTypeChooserServiceProtocol {
     private(set) var errorSubject: CurrentValueSubject<Error?, Never>
 
     private(set) var selectedType: RoomAccessTypeChooserAccessType = .private
-    var currentRoomId = "!aaabaa:matrix.org"
+    var currentRoomId: String = "!aaabaa:matrix.org"
     var versionOverride: String? {
-        "9"
+        return "9"
     }
     
     init(accessItems: [RoomAccessTypeChooserAccessItem] = mockAccessItems) {
@@ -43,14 +44,18 @@ class MockRoomAccessTypeChooserService: RoomAccessTypeChooserServiceProtocol {
     }
     
     func simulateUpdate(accessItems: [RoomAccessTypeChooserAccessItem]) {
-        accessItemsSubject.send(accessItems)
+        self.accessItemsSubject.send(accessItems)
     }
     
-    func updateSelection(with selectedType: RoomAccessTypeChooserAccessType) { }
+    func updateSelection(with selectedType: RoomAccessTypeChooserAccessType) {
+        
+    }
     
     func updateRoomId(with roomId: String) {
         currentRoomId = roomId
     }
     
-    func applySelection(completion: @escaping () -> Void) { }
+    func applySelection(completion: @escaping () -> Void) {
+
+    }
 }

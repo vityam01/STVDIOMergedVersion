@@ -189,7 +189,6 @@ extension UserVerificationCoordinator: KeyVerificationCoordinatorDelegate {
     
     func keyVerificationCoordinatorDidComplete(_ coordinator: KeyVerificationCoordinatorType, otherUserId: String, otherDeviceId: String) {
         dismissPresenter(coordinator: coordinator)
-        delegate?.userVerificationCoordinatorDidComplete(self)
     }
     
     func keyVerificationCoordinatorDidCancel(_ coordinator: KeyVerificationCoordinatorType) {
@@ -210,7 +209,6 @@ extension UserVerificationCoordinator: KeyVerificationManuallyVerifyCoordinatorD
         self.presenter.toPresentable().dismiss(animated: true) {
             self.remove(childCoordinator: coordinator)
         }
-        delegate?.userVerificationCoordinatorDidComplete(self)
     }
     
     func keyVerificationManuallyVerifyCoordinatorDidCancel(_ coordinator: KeyVerificationManuallyVerifyCoordinatorType) {

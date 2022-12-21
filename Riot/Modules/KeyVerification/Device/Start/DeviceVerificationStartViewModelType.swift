@@ -25,7 +25,8 @@ protocol DeviceVerificationStartViewModelViewDelegate: AnyObject {
 protocol DeviceVerificationStartViewModelCoordinatorDelegate: AnyObject {
     func deviceVerificationStartViewModelDidUseLegacyVerification(_ viewModel: DeviceVerificationStartViewModelType)
 
-    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, otherDidAcceptRequest request: MXKeyVerificationRequest)
+    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, didCompleteWithOutgoingTransaction transaction: MXSASTransaction)
+    func deviceVerificationStartViewModel(_ viewModel: DeviceVerificationStartViewModelType, didTransactionCancelled transaction: MXSASTransaction)
 
     func deviceVerificationStartViewModelDidCancel(_ viewModel: DeviceVerificationStartViewModelType)
 }

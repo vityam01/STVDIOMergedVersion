@@ -55,6 +55,9 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     // We will notify user only once on session failure
     BOOL notifyOpenSessionFailure;
     
+    // The timer used to postpone server sync on failure
+    NSTimer* initialServerSyncTimer;
+    
     // Reachability observer
     id reachabilityObserver;
     
@@ -83,8 +86,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 
     // Observe NSCurrentLocaleDidChangeNotification to refresh MXRoomSummaries on time formatting change.
     id NSCurrentLocaleDidChangeNotificationObserver;
-    
-    MXPusher *currentPusher;
 }
 
 /// Will be true if the session is not in a pauseable state or we requested for the session to pause but not finished yet. Will be reverted to false again after `resume` called.
@@ -148,7 +149,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         
         // Refresh device information
         [self loadDeviceInformation:nil failure:nil];
-        [self loadCurrentPusher:nil failure:nil];
 
         [self registerAccountDataDidChangeIdentityServerNotification];
         [self registerIdentityServiceDidChangeAccessTokenNotification];
@@ -184,7 +184,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         
         // Refresh device information
         [self loadDeviceInformation:nil failure:nil];
-        [self loadCurrentPusher:nil failure:nil];
     }
     
     return self;
@@ -304,12 +303,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 
 - (BOOL)pushNotificationServiceIsActive
 {
-    if (currentPusher && currentPusher.enabled)
-    {
-        MXLogDebug(@"[MXKAccount][Push] pushNotificationServiceIsActive: currentPusher.enabled %@", currentPusher.enabled);
-        return currentPusher.enabled.boolValue;
-    }
-    
     BOOL pushNotificationServiceIsActive = ([[MXKAccountManager sharedManager] isAPNSAvailable] && self.hasPusherForPushNotifications && mxSession);
     MXLogDebug(@"[MXKAccount][Push] pushNotificationServiceIsActive: %@", @(pushNotificationServiceIsActive));
 
@@ -324,44 +317,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 
     if (enable)
     {
-        if (currentPusher && currentPusher.enabled && !currentPusher.enabled.boolValue)
-        {
-            [self.mxSession.matrixRestClient setPusherWithPushkey:currentPusher.pushkey
-                                                             kind:currentPusher.kind
-                                                            appId:currentPusher.appId
-                                                   appDisplayName:currentPusher.appDisplayName
-                                                deviceDisplayName:currentPusher.deviceDisplayName
-                                                       profileTag:currentPusher.profileTag
-                                                             lang:currentPusher.lang
-                                                             data:currentPusher.data.JSONDictionary
-                                                           append:NO
-                                                          enabled:enable
-                                                          success:^{
-                
-                MXLogDebug(@"[MXKAccount][Push] enablePushNotifications: remotely enabled Push: Success");
-                [self loadCurrentPusher:^{
-                    if (success)
-                    {
-                        success();
-                    }
-                } failure:^(NSError *error) {
-                    
-                    MXLogWarning(@"[MXKAccount][Push] enablePushNotifications: load current pusher failed with error: %@", error);
-                    if (failure)
-                    {
-                        failure(error);
-                    }
-                }];
-            } failure:^(NSError *error) {
-
-                MXLogWarning(@"[MXKAccount][Push] enablePushNotifications: remotely enable push failed with error: %@", error);
-                if (failure)
-                {
-                    failure(error);
-                }
-            }];
-        }
-        else if ([[MXKAccountManager sharedManager] isAPNSAvailable])
+        if ([[MXKAccountManager sharedManager] isAPNSAvailable])
         {
             MXLogDebug(@"[MXKAccount][Push] enablePushNotifications: Enable Push for %@ account", self.mxCredentials.userId);
 
@@ -398,7 +354,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
             }
         }
     }
-    else if (self.hasPusherForPushNotifications || currentPusher)
+    else if (self.hasPusherForPushNotifications)
     {
         MXLogDebug(@"[MXKAccount][Push] enablePushNotifications: Disable APNS for %@ account", self.mxCredentials.userId);
         
@@ -670,65 +626,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     }];
 }
 
-- (void)loadCurrentPusher:(void (^)(void))success failure:(void (^)(NSError *error))failure
-{
-    if (!self.mxSession.myDeviceId)
-    {
-        MXLogWarning(@"[MXKAccount] loadPusher: device ID not found");
-        if (failure)
-        {
-            failure([NSError errorWithDomain:kMXKAccountErrorDomain code:0 userInfo:nil]);
-        }
-        return;
-    }
-    
-    [self.mxSession supportedMatrixVersions:^(MXMatrixVersions *matrixVersions) {
-        if (!matrixVersions.supportsRemotelyTogglingPushNotifications)
-        {
-            MXLogDebug(@"[MXKAccount] loadPusher: remotely toggling push notifications not supported");
-            
-            if (success)
-            {
-                success();
-            }
-            
-            return;
-        }
-        
-        [self.mxSession.matrixRestClient pushers:^(NSArray<MXPusher *> *pushers) {
-            MXPusher *ownPusher;
-            for (MXPusher *pusher in pushers)
-            {
-                if ([pusher.deviceId isEqualToString:self.mxSession.myDeviceId])
-                {
-                    ownPusher = pusher;
-                }
-            }
-            
-            self->currentPusher = ownPusher;
-            
-            if (success)
-            {
-                success();
-            }
-        } failure:^(NSError *error) {
-            MXLogWarning(@"[MXKAccount] loadPusher: get pushers failed due to error %@", error);
-            
-            if (failure)
-            {
-                failure(error);
-            }
-        }];
-    } failure:^(NSError *error) {
-        MXLogWarning(@"[MXKAccount] loadPusher: supportedMatrixVersions failed due to error %@", error);
-        
-        if (failure)
-        {
-            failure(error);
-        }
-   }];
-}
-
 - (void)loadDeviceInformation:(void (^)(void))success failure:(void (^)(NSError *error))failure
 {
     if (self.mxCredentials.deviceId)
@@ -876,9 +773,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         [MXKContactManager.sharedManager validateSyncLocalContactsStateForSession:self.mxSession];
         
         // Refresh pusher state
-        [self loadCurrentPusher:^{
-            [self refreshAPNSPusher];
-        } failure:nil];
+        [self refreshAPNSPusher];
         [self refreshPushKitPusher];
         
         // Launch server sync
@@ -889,9 +784,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         // This cannot happen. Loading of MXFileStore cannot fail.
         MXStrongifyAndReturnIfNil(self);
         self->mxSession = nil;
-        
-        NSString *myUserId = self.mxSession.myUser.userId;
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMXKErrorNotification object:error userInfo:myUserId ? @{kMXKErrorUserIdKey: myUserId} : nil];
         
         [[NSNotificationCenter defaultCenter] removeObserver:self->sessionStateObserver];
         self->sessionStateObserver = nil;
@@ -934,6 +826,9 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         sessionStateObserver = nil;
     }
     
+    [initialServerSyncTimer invalidate];
+    initialServerSyncTimer = nil;
+    
     if (userUpdateListener)
     {
         [mxSession.myUser removeListener:userUpdateListener];
@@ -949,10 +844,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         {
             // Force a reload of device keys at the next session start.
             // This will fix potential UISIs other peoples receive for our messages.
-            if ([mxSession.crypto isKindOfClass:[MXLegacyCrypto class]])
-            {
-                [(MXLegacyCrypto *)mxSession.crypto resetDeviceKeys];
-            }
+            [mxSession.crypto resetDeviceKeys];
             
             // Clean other stores
             [mxSession.scanManager deleteAllAntivirusScans];
@@ -1133,6 +1025,8 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         // Cancel pending actions
         [[NSNotificationCenter defaultCenter] removeObserver:reachabilityObserver];
         reachabilityObserver = nil;
+        [initialServerSyncTimer invalidate];
+        initialServerSyncTimer = nil;
 
         MXLogDebug(@"[MXKAccount] Pause is delayed due to the session state: %@", [MXTools readableSessionState: mxSession.state]);
     }
@@ -1212,12 +1106,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 - (void)refreshAPNSPusher
 {
     MXLogDebug(@"[MXKAccount][Push] refreshAPNSPusher");
-    
-    if (currentPusher)
-    {
-        MXLogDebug(@"[MXKAccount][Push] refreshAPNSPusher aborted as a pusher has been found");
-        return;
-    }
 
     // Check the conditions required to run the pusher
     if (self.pushNotificationServiceIsActive)
@@ -1277,35 +1165,12 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         self->_hasPusherForPushNotifications = enabled;
         [[MXKAccountManager sharedManager] saveAccounts];
         
-        if (enabled)
+        if (success)
         {
-            [self loadCurrentPusher:^{
-                if (success)
-                {
-                    success();
-                }
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:kMXKAccountAPNSActivityDidChangeNotification object:self.mxCredentials.userId];
-            } failure:^(NSError *error) {
-                if (success)
-                {
-                    success();
-                }
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:kMXKAccountAPNSActivityDidChangeNotification object:self.mxCredentials.userId];
-            }];
+            success();
         }
-        else
-        {
-            self->currentPusher = nil;
-            
-            if (success)
-            {
-                success();
-            }
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:kMXKAccountAPNSActivityDidChangeNotification object:self.mxCredentials.userId];
-        }
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMXKAccountAPNSActivityDidChangeNotification object:self.mxCredentials.userId];
         
     } failure:^(NSError *error) {
         
@@ -1550,7 +1415,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     
     MXRestClient *restCli = self.mxRestClient;
     
-    [restCli setPusherWithPushkey:b64Token kind:kind appId:appId appDisplayName:appDisplayName deviceDisplayName:[[UIDevice currentDevice] name] profileTag:profileTag lang:deviceLang data:pushData append:append enabled:enabled success:success failure:failure];
+    [restCli setPusherWithPushkey:b64Token kind:kind appId:appId appDisplayName:appDisplayName deviceDisplayName:[[UIDevice currentDevice] name] profileTag:profileTag lang:deviceLang data:pushData append:append success:success failure:failure];
 }
 
 #pragma mark - InApp notifications
@@ -1622,6 +1487,8 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     // Cancel potential reachability observer and pending action
     [[NSNotificationCenter defaultCenter] removeObserver:reachabilityObserver];
     reachabilityObserver = nil;
+    [initialServerSyncTimer invalidate];
+    initialServerSyncTimer = nil;
     
     // Sanity check
     if (!mxSession || (mxSession.state != MXSessionStateStoreDataReady && mxSession.state != MXSessionStateInitialSyncFailed))
@@ -1680,14 +1547,6 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
                     NSString *myUserId = self.mxSession.myUser.userId;
                     [[NSNotificationCenter defaultCenter] postNotificationName:kMXKErrorNotification object:error userInfo:myUserId ? @{kMXKErrorUserIdKey: myUserId} : nil];
                 }
-                
-                // If we cannot resolve this error by retrying, exit early
-                BOOL isRetryableError = [error.domain isEqualToString:NSURLErrorDomain] || [MXHTTPOperation urlResponseFromError:error] != nil;
-                if (!isRetryableError)
-                {
-                    MXLogDebug(@"[MXKAccount] Initial sync will not be retried");
-                    return;
-                }
 
                 // Check if it is a network connectivity issue
                 AFNetworkReachabilityManager *networkReachabilityManager = [AFNetworkReachabilityManager sharedManager];
@@ -1695,8 +1554,9 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 
                 if (networkReachabilityManager.isReachable)
                 {
-                    // If we have network, we retry immediately, otherwise the server may clear any cache it has computed thus far
-                    [self launchInitialServerSync];
+                    // The problem is not the network
+                    // Postpone a new attempt in 10 sec
+                    self->initialServerSyncTimer = [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(launchInitialServerSync) userInfo:self repeats:NO];
                 }
                 else
                 {
@@ -1746,18 +1606,8 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         return;
     }
     
-    if (![mxSession.crypto.crossSigning isKindOfClass:[MXLegacyCrossSigning class]]) {
-        MXLogFailure(@"Device dehydratation is currently only supported by legacy cross signing, add support to all implementations");
-        if (failure)
-        {
-            failure(nil);
-        }
-        return;
-    }
-    MXLegacyCrossSigning *crossSigning = (MXLegacyCrossSigning *)mxSession.crypto.crossSigning;;
-    
     MXLogDebug(@"[MXKAccount] attemptDeviceDehydrationWithRetry: starting device dehydration");
-    [[MXKAccountManager sharedManager].dehydrationService dehydrateDeviceWithMatrixRestClient:mxRestClient crossSigning:crossSigning dehydrationKey:keyData success:^(NSString *deviceId) {
+    [[MXKAccountManager sharedManager].dehydrationService dehydrateDeviceWithMatrixRestClient:mxRestClient crypto:mxSession.crypto dehydrationKey:keyData success:^(NSString *deviceId) {
         MXLogDebug(@"[MXKAccount] attemptDeviceDehydrationWithRetry: device successfully dehydrated");
         
         if (success)
@@ -2088,15 +1938,14 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
 
 #pragma mark - Sync filter
 
-- (void)supportLazyLoadOfRoomMembersWithMatrixVersion:(MXMatrixVersions *)matrixVersions
-                                           completion:(void (^)(BOOL supportLazyLoadOfRoomMembers))completion
+- (void)supportLazyLoadOfRoomMembers:(void (^)(BOOL supportLazyLoadOfRoomMembers))completion
 {
     void(^onUnsupportedLazyLoadOfRoomMembers)(NSError *) = ^(NSError *error) {
         completion(NO);
     };
 
     // Check if the server supports LL sync filter
-    MXFilterJSONModel *filter = [self syncFilterWithLazyLoadOfRoomMembers:YES supportsNotificationsForThreads:NO];
+    MXFilterJSONModel *filter = [self syncFilterWithLazyLoadOfRoomMembers:YES];
     [mxSession.store filterIdForFilter:filter success:^(NSString * _Nullable filterId) {
 
         if (filterId)
@@ -2107,8 +1956,8 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
         else
         {
             // Check the Matrix versions supported by the HS
-            if (matrixVersions)
-            {
+            [self.mxSession supportedMatrixVersions:^(MXMatrixVersions *matrixVersions) {
+
                 if (matrixVersions.supportLazyLoadMembers)
                 {
                     // The HS supports LL
@@ -2118,11 +1967,8 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
                 {
                     onUnsupportedLazyLoadOfRoomMembers(nil);
                 }
-            }
-            else
-            {
-                completion(NO);
-            }
+
+            } failure:onUnsupportedLazyLoadOfRoomMembers];
         }
     } failure:onUnsupportedLazyLoadOfRoomMembers];
 }
@@ -2137,42 +1983,28 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     // Check settings
     BOOL syncWithLazyLoadOfRoomMembersSetting = [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers;
 
-    void(^buildSyncFilter)(MXMatrixVersions *) = ^(MXMatrixVersions *matrixVersions) {
-        BOOL supportsNotificationsForThreads = matrixVersions ? matrixVersions.supportsNotificationsForThreads : NO;
-        
-        if (syncWithLazyLoadOfRoomMembersSetting)
-        {
-            // Check if the server supports LL sync filter before enabling it
-            [self supportLazyLoadOfRoomMembersWithMatrixVersion:matrixVersions completion:^(BOOL supportLazyLoadOfRoomMembers) {
-                
+    if (syncWithLazyLoadOfRoomMembersSetting)
+    {
+        // Check if the server supports LL sync filter before enabling it
+        [self supportLazyLoadOfRoomMembers:^(BOOL supportLazyLoadOfRoomMembers) {
 
-                if (supportLazyLoadOfRoomMembers)
-                {
-                    completion([self syncFilterWithLazyLoadOfRoomMembers:YES
-                                         supportsNotificationsForThreads:supportsNotificationsForThreads]);
-                }
-                else
-                {
-                    // No support from the HS
-                    // Disable the setting. That will avoid to make a request at every startup
-                    [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers = NO;
-                    completion([self syncFilterWithLazyLoadOfRoomMembers:NO
-                                         supportsNotificationsForThreads:supportsNotificationsForThreads]);
-                }
-            }];
-        }
-        else
-        {
-            completion([self syncFilterWithLazyLoadOfRoomMembers:NO supportsNotificationsForThreads:supportsNotificationsForThreads]);
-        }
-    };
-
-    [mxSession supportedMatrixVersions:^(MXMatrixVersions *matrixVersions) {
-        buildSyncFilter(matrixVersions);
-    } failure:^(NSError *error) {
-        MXLogWarning(@"[MXAccount] buildSyncFilter: failed to get supported versions: %@", error);
-        buildSyncFilter(nil);
-    }];
+            if (supportLazyLoadOfRoomMembers)
+            {
+                completion([self syncFilterWithLazyLoadOfRoomMembers:YES]);
+            }
+            else
+            {
+                // No support from the HS
+                // Disable the setting. That will avoid to make a request at every startup
+                [MXKAppSettings standardAppSettings].syncWithLazyLoadOfRoomMembers = NO;
+                completion([self syncFilterWithLazyLoadOfRoomMembers:NO]);
+            }
+        }];
+    }
+    else
+    {
+        completion([self syncFilterWithLazyLoadOfRoomMembers:NO]);
+    }
 }
 
 /**
@@ -2181,7 +2013,7 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
  @param syncWithLazyLoadOfRoomMembers enable LL support.
  @return the sync filter to use.
  */
-- (MXFilterJSONModel *)syncFilterWithLazyLoadOfRoomMembers:(BOOL)syncWithLazyLoadOfRoomMembers supportsNotificationsForThreads:(BOOL)supportsNotificationsForThreads
+- (MXFilterJSONModel *)syncFilterWithLazyLoadOfRoomMembers:(BOOL)syncWithLazyLoadOfRoomMembers
 {
     MXFilterJSONModel *syncFilter;
     NSUInteger limit = 10;
@@ -2216,11 +2048,11 @@ static NSArray<NSNumber*> *initialSyncSilentErrorsHTTPStatusCodes;
     // Set that limit in the filter
     if (syncWithLazyLoadOfRoomMembers)
     {
-        syncFilter = [MXFilterJSONModel syncFilterForLazyLoadingWithMessageLimit:limit unreadThreadNotifications:supportsNotificationsForThreads];
+        syncFilter = [MXFilterJSONModel syncFilterForLazyLoadingWithMessageLimit:limit];
     }
     else
     {
-        syncFilter = [MXFilterJSONModel syncFilterWithMessageLimit:limit unreadThreadNotifications:supportsNotificationsForThreads];
+        syncFilter = [MXFilterJSONModel syncFilterWithMessageLimit:limit];
     }
 
     // TODO: We could extend the filter to match other settings (self.showAllEventsInRoomHistory,

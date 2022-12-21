@@ -1,6 +1,6 @@
 // File created from TemplateAdvancedRoomsExample
 // $ createSwiftUITwoScreen.sh Spaces/SpaceCreation SpaceCreation SpaceCreationMenu SpaceCreationSettings
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,14 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
     
-typealias SpaceCreationMenuViewModelType = StateStoreViewModel<SpaceCreationMenuViewState, SpaceCreationMenuViewAction>
-
+typealias SpaceCreationMenuViewModelType = StateStoreViewModel<SpaceCreationMenuViewState,
+                                                              SpaceCreationMenuStateAction,
+                                                              SpaceCreationMenuViewAction>
 class SpaceCreationMenuViewModel: SpaceCreationMenuViewModelType, SpaceCreationMenuViewModelProtocol {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -41,7 +43,7 @@ class SpaceCreationMenuViewModel: SpaceCreationMenuViewModelType, SpaceCreationM
     }
     
     private static func defaultState(navTitle: String?, creationParams: SpaceCreationParameters, title: String, detail: String, options: [SpaceCreationMenuRoomOption]) -> SpaceCreationMenuViewState {
-        var navigationTitle = ""
+        var navigationTitle: String = ""
         if let navTitle = navTitle {
             navigationTitle = navTitle
         } else {
@@ -58,13 +60,13 @@ class SpaceCreationMenuViewModel: SpaceCreationMenuViewModelType, SpaceCreationM
         case .didSelectOption(let optionId):
             switch optionId {
             case .publicSpace:
-                creationParams.isPublic = true
+                self.creationParams.isPublic = true
             case .privateSpace:
-                creationParams.isPublic = false
+                self.creationParams.isPublic = false
             case .ownedPrivateSpace:
-                creationParams.isShared = false
+                self.creationParams.isShared = false
             case .sharedPrivateSpace:
-                creationParams.isShared = true
+                self.creationParams.isShared = true
             }
 
             didSelectOption(withId: optionId)

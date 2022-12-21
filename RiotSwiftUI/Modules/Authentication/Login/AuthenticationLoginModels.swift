@@ -31,8 +31,6 @@ enum AuthenticationLoginViewModelResult: CustomStringConvertible {
     case continueWithSSO(SSOIdentityProvider)
     /// Continue using the fallback page
     case fallback
-    /// Continue with QR login
-    case qrLogin
     
     /// A string representation of the result, ignoring any associated values that could leak PII.
     var description: String {
@@ -49,8 +47,6 @@ enum AuthenticationLoginViewModelResult: CustomStringConvertible {
             return "continueWithSSO: \(provider)"
         case .fallback:
             return "fallback"
-        case .qrLogin:
-            return "qrLogin"
         }
     }
 }
@@ -61,7 +57,7 @@ struct AuthenticationLoginViewState: BindableState {
     /// Data about the selected homeserver.
     var homeserver: AuthenticationHomeserverViewData
     /// Whether a new homeserver is currently being loaded.
-    var isLoading = false
+    var isLoading: Bool = false
     /// View state that can be bound to from SwiftUI.
     var bindings: AuthenticationLoginBindings
     
@@ -103,8 +99,6 @@ enum AuthenticationLoginViewAction {
     case fallback
     /// Continue using the supplied SSO provider.
     case continueWithSSO(SSOIdentityProvider)
-    /// Continue using QR login
-    case qrLogin
 }
 
 enum AuthenticationLoginErrorType: Hashable {

@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ import SwiftUI
 
 /// The splash screen shown at the beginning of the onboarding flow.
 struct OnboardingSplashScreen: View {
+
     // MARK: - Properties
     
     // MARK: Private
@@ -45,23 +46,26 @@ struct OnboardingSplashScreen: View {
                 
                 // The main content of the carousel
                 HStack(alignment: .top, spacing: 0) {
-                    // Add a hidden page at the start of the carousel duplicating the content of the last page
-                    OnboardingSplashScreenPage(content: viewModel.viewState.content[pageCount - 1])
-                        .frame(width: geometry.size.width)
                     
-                    ForEach(0..<pageCount, id: \.self) { index in
+                    // Add a hidden page at the start of the carousel duplicating the content of the last page
+//                    OnboardingSplashScreenPage(content: viewModel.viewState.content[pageCount - 1])
+//                        .frame(width: geometry.size.width)
+                    
+                    let index = 0
+//                    ForEach(0..<pageCount, id: \.self) { index in
                         OnboardingSplashScreenPage(content: viewModel.viewState.content[index])
                             .frame(width: geometry.size.width)
-                    }
+//                    }
+                    
                 }
-                .offset(x: pageOffset(in: geometry))
+//                .offset(x: pageOffset(in: geometry))
                 
                 Spacer()
-                
-                OnboardingSplashScreenPageIndicator(pageCount: pageCount,
-                                                    pageIndex: viewModel.pageIndex)
-                    .frame(width: geometry.size.width)
-                    .padding(.bottom)
+
+//                OnboardingSplashScreenPageIndicator(pageCount: pageCount,
+//                                                    pageIndex: viewModel.pageIndex)
+//                .frame(width: geometry.size.width)
+//                .padding(.bottom)
                 
                 Spacer()
                 
@@ -74,19 +78,19 @@ struct OnboardingSplashScreen: View {
                     .frame(height: OnboardingMetrics.spacerHeight(in: geometry))
             }
             .frame(maxHeight: .infinity)
-            .background(background.ignoresSafeArea().offset(x: pageOffset(in: geometry)))
-            .gesture(
-                DragGesture()
-                    .onChanged(handleDragGestureChange)
-                    .onEnded { handleDragGestureEnded($0, viewSize: geometry.size) }
-            )
+            .background(background.ignoresSafeArea()/*.offset(x: pageOffset(in: geometry))*/)
+//            .gesture(
+//                DragGesture()
+//                    .onChanged(handleDragGestureChange)
+//                    .onEnded { handleDragGestureEnded($0, viewSize: geometry.size) }
+//            )
         }
         .accentColor(theme.colors.accent)
         .navigationBarHidden(true)
-        .onAppear {
-            startTimer()
-        }
-        .onDisappear { stopTimer() }
+//        .onAppear {
+//            startTimer()
+//        }
+//        .onDisappear { stopTimer() }
         .track(screen: .welcome)
     }
     
@@ -120,14 +124,14 @@ struct OnboardingSplashScreen: View {
             theme.colors.background
         }
     }
-    
+    /*
     // MARK: - Animation
     
     /// Starts the animation timer for an automatic carousel effect.
     private func startTimer() {
         guard pageTimer == nil else { return }
         
-        pageTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
+        pageTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { timer in
             if viewModel.pageIndex == pageCount - 1 {
                 viewModel.send(viewAction: .hiddenPage)
                 
@@ -161,7 +165,7 @@ struct OnboardingSplashScreen: View {
     /// - Parameter width: The gesture's translation width.
     /// - Returns: `true` if there is another page to drag to.
     private func shouldSwipeForTranslation(_ width: CGFloat) -> Bool {
-        if viewModel.pageIndex == 0 {
+        if viewModel.pageIndex == 0  {
             return isLeftToRight ? width < 0 : width > 0
         } else if viewModel.pageIndex == pageCount - 1 {
             return isLeftToRight ? width > 0 : width < 0
@@ -202,6 +206,7 @@ struct OnboardingSplashScreen: View {
             dragOffset = 0
         }
     }
+     */
 }
 
 // MARK: - Previews

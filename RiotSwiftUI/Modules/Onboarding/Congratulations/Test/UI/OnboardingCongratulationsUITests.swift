@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import RiotSwiftUI
 import XCTest
+import RiotSwiftUI
 
 class OnboardingCongratulationsUITests: MockScreenTestCase {
     func testButtons() {

@@ -69,7 +69,7 @@
                           bundle:[NSBundle bundleForClass:[MXKRoomInputToolbarView class]]];
 }
 
-+ (MXKRoomInputToolbarView *)instantiateRoomInputToolbarView
++ (instancetype)roomInputToolbarView
 {
     if ([[self class] nib])
     {

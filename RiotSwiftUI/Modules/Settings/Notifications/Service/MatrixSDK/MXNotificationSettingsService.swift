@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 
 class MXNotificationSettingsService: NotificationSettingsServiceType {
+    
     private let session: MXSession
     private var cancellables = Set<AnyCancellable>()
     
@@ -25,11 +26,11 @@ class MXNotificationSettingsService: NotificationSettingsServiceType {
     @Published private var rules = [MXPushRule]()
     
     var rulesPublisher: AnyPublisher<[NotificationPushRuleType], Never> {
-        $rules.map { $0.map { $0 as NotificationPushRuleType } }.eraseToAnyPublisher()
+        $rules.map({ $0.map({ $0 as NotificationPushRuleType }) }).eraseToAnyPublisher()
     }
     
     var contentRulesPublisher: AnyPublisher<[NotificationPushRuleType], Never> {
-        $contentRules.map { $0.map { $0 as NotificationPushRuleType } }.eraseToAnyPublisher()
+        $contentRules.map({ $0.map({ $0 as NotificationPushRuleType }) }).eraseToAnyPublisher()
     }
     
     init(session: MXSession) {
@@ -44,7 +45,7 @@ class MXNotificationSettingsService: NotificationSettingsServiceType {
         
         // Observe future updates to content rules
         rulesUpdated
-            .compactMap { _ in self.session.notificationCenter.rules.global.content as? [MXPushRule] }
+            .compactMap({ _ in self.session.notificationCenter.rules.global.content as? [MXPushRule] })
             .assign(to: &$contentRules)
         
         // Set initial value of rules
@@ -53,7 +54,7 @@ class MXNotificationSettingsService: NotificationSettingsServiceType {
         }
         // Observe future updates to rules
         rulesUpdated
-            .compactMap { _ in self.session.notificationCenter.flatRules as? [MXPushRule] }
+            .compactMap({ _ in self.session.notificationCenter.flatRules as? [MXPushRule] })
             .assign(to: &$rules)
     }
     

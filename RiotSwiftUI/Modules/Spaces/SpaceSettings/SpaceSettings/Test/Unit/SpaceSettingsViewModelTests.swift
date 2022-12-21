@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import Combine
 import XCTest
+import Combine
 
 @testable import RiotSwiftUI
 
@@ -38,8 +38,7 @@ class SpaceSettingsViewModelTests: XCTestCase {
             isNameEditable: true,
             isTopicEditable: true,
             isAddressEditable: true,
-            isAccessEditable: true
-        )
+            isAccessEditable: true)
 
         service = MockSpaceSettingsService(roomProperties: roomProperties, displayName: roomProperties.name, isLoading: false, showPostProcessAlert: false)
         viewModel = SpaceSettingsViewModel.makeSpaceSettingsViewModel(service: service)

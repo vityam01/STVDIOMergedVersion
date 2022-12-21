@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2022 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import Foundation
 
 class MatrixItemChooserDirectChildrenDataSource: MatrixItemChooserDataSource {
+    
     // MARK: - Private
     
     private let parentId: String
@@ -33,13 +34,13 @@ class MatrixItemChooserDirectChildrenDataSource: MatrixItemChooserDataSource {
 
     func sections(with session: MXSession, completion: @escaping (Result<[MatrixListItemSectionData], Error>) -> Void) {
         let space = session.spaceService.getSpace(withId: parentId)
-        let children: [MatrixListItemData] = space?.childRoomIds.compactMap { roomId in
+        let children: [MatrixListItemData] = space?.childRoomIds.compactMap({ roomId in
             guard let room = session.room(withRoomId: roomId), !room.isDirect else {
                 return nil
             }
             
             return MatrixListItemData(mxRoom: room, spaceService: session.spaceService)
-        } ?? []
+        }) ?? []
         completion(Result(catching: {
             [
                 MatrixListItemSectionData(items: children)

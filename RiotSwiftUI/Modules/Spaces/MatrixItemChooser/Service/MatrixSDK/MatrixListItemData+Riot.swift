@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import Foundation
 
 extension MatrixListItemData {
+    
     init(mxUser: MXUser) {
         self.init(id: mxUser.userId, type: .user, avatar: mxUser.avatarData, displayName: mxUser.displayname, detailText: mxUser.userId)
     }
@@ -53,4 +54,5 @@ extension MatrixListItemData {
         }
         self.init(id: mxRoom.roomId, type: type, avatar: mxRoom.avatarData, displayName: mxRoom.summary.displayname, detailText: detailText)
     }
+    
 }

@@ -22,10 +22,7 @@ extension UITextView {
         self.attributedText.enumerateAttribute(
             .attachment,
             in: NSRange(location: 0, length: self.attributedText.length),
-            options: []) { value, range, _ in
-                guard value != nil else {
-                    return
-                }
+            options: []) { _, range, _ in
                 self.layoutManager.invalidateDisplay(forCharacterRange: range)
             }
     }

@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,12 +38,11 @@ struct SpaceCreationPostProcessTask: Equatable {
     let title: String
     var state: SpaceCreationPostProcessTaskState
     var isFinished: Bool {
-        state == .failure || state == .success
+        return state == .failure || state == .success
     }
-
     var subTasks: [SpaceCreationPostProcessTask] = []
     
     static func == (lhs: SpaceCreationPostProcessTask, rhs: SpaceCreationPostProcessTask) -> Bool {
-        lhs.type == rhs.type && lhs.title == rhs.title && lhs.state == rhs.state && lhs.subTasks == lhs.subTasks
+        return lhs.type == rhs.type && lhs.title == rhs.title && lhs.state == rhs.state && lhs.subTasks == lhs.subTasks
     }
 }

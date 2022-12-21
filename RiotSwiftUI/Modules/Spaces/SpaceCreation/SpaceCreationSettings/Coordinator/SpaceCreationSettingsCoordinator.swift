@@ -17,10 +17,11 @@
  */
 
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
 
 final class SpaceCreationSettingsCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -71,12 +72,13 @@ final class SpaceCreationSettingsCoordinator: Coordinator, Presentable {
                 self.callback?(.back)
             case .pickImage(let sourceRect):
                 self.pickImage(from: sourceRect)
+            break
             }
         }
     }
     
     func toPresentable() -> UIViewController {
-        spaceCreationSettingsHostingController
+        return self.spaceCreationSettingsHostingController
     }
     
     // MARK: - Private
@@ -89,7 +91,6 @@ final class SpaceCreationSettingsCoordinator: Coordinator, Presentable {
 }
 
 // MARK: - SingleImagePickerPresenterDelegate
-
 extension SpaceCreationSettingsCoordinator: SingleImagePickerPresenterDelegate {
     func singleImagePickerPresenter(_ presenter: SingleImagePickerPresenter, didSelectImageData imageData: Data, withUTI uti: MXKUTI?) {
         spaceCreationSettingsViewModel.updateAvatarImage(with: UIImage(data: imageData))

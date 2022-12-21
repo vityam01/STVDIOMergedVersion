@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import DesignKit
 import Foundation
+import DesignKit
 
 struct DarkThemeSwiftUI: ThemeSwiftUI {
     var identifier: ThemeIdentifier = .dark
-    let isDark = true
+    let isDark: Bool = true
     var colors: ColorSwiftUI = DarkColors.swiftUI
-    var fonts = FontSwiftUI(values: ElementFonts())
+    var fonts: FontSwiftUI = FontSwiftUI(values: ElementFonts())
 }

@@ -17,7 +17,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>im.vector.app.pills</string>
+				<string>io.stvd.space.pills</string>
 			</array>
 		</dict>
 	</array>
@@ -124,6 +124,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>UTExportedTypeDeclarations</key>
@@ -135,10 +137,16 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Mention Pills</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
 			<key>UTTypeIdentifier</key>
-			<string>im.vector.app.pills</string>
+			<string>io.stvd.space.pills</string>
+			<key>UTTypeTagSpecification</key>
+			<dict/>
 		</dict>
 	</array>
+	<key>UserDefaults</key>
+	<string>${PRODUCT_NAME}-Defaults</string>
 	<key>applicationGroupIdentifier</key>
 	<string>$(APPLICATION_GROUP_IDENTIFIER)</string>
 	<key>baseBundleIdentifier</key>

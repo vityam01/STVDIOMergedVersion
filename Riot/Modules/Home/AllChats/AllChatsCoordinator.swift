@@ -74,7 +74,7 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
     }
     
     private var indicators = [UserIndicator]()
-    private var signOutFlowPresenter: SignOutFlowPresenter?
+    private var signOutAlertPresenter = SignOutAlertPresenter()
     
     // MARK: Public
 
@@ -107,6 +107,8 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
                 
         // If start has been done once do not setup view controllers again
         if self.hasStartedOnce == false {
+            signOutAlertPresenter.delegate = self
+            
             let allChatsViewController = AllChatsViewController.instantiate()
             allChatsViewController.allChatsDelegate = self
             allChatsViewController.userIndicatorStore = UserIndicatorStore(presenter: indicatorPresenter)
@@ -332,7 +334,7 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
         createAvatarButtonItem(for: viewController)
     }
 
-    private var avatarMenu: UIMenu {
+    private func createAvatarButtonItem(for viewController: UIViewController) {
         var actions: [UIMenuElement] = []
         
         actions.append(UIAction(title: VectorL10n.allChatsUserMenuSettings, image: UIImage(systemName: "gearshape")) { [weak self] action in
@@ -358,30 +360,31 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
             }
         ]))
 
-        return UIMenu(options: .displayInline, children: actions)
-    }
-
-    private func createAvatarButtonItem(for viewController: UIViewController) {
+        let menu = UIMenu(options: .displayInline, children: actions)
+        
         let view = UIView(frame: CGRect(x: 0, y: 0, width: 36, height: 36))
         view.backgroundColor = .clear
         
-        let avatarInsets: UIEdgeInsets = .init(top: 7, left: 7, bottom: 7, right: 7)
-        let button: UIButton = .init(frame: view.bounds.inset(by: avatarInsets))
+        let button: UIButton = UIButton(frame: view.bounds.inset(by: UIEdgeInsets(top: 7, left: 7, bottom: 7, right: 7)))
         button.setImage(Asset.Images.tabPeople.image, for: .normal)
-        button.menu = avatarMenu
+        button.menu = menu
         button.showsMenuAsPrimaryAction = true
         button.autoresizingMask = [.flexibleHeight, .flexibleWidth]
-        button.accessibilityLabel = VectorL10n.allChatsUserMenuAccessibilityLabel
         view.addSubview(button)
         self.avatarMenuButton = button
 
-        let avatarView = UserAvatarView(frame: view.bounds.inset(by: avatarInsets))
+        let avatarView = UserAvatarView(frame: view.bounds.inset(by: UIEdgeInsets(top: 7, left: 7, bottom: 7, right: 7)))
         avatarView.isUserInteractionEnabled = false
         avatarView.update(theme: ThemeService.shared().theme)
         avatarView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         view.addSubview(avatarView)
         self.avatarMenuView = avatarView
-        updateAvatarButtonItem()
+
+        if let avatar = userAvatarViewData(from: currentMatrixSession) {
+            avatarView.fill(with: avatar)
+            button.setImage(nil, for: .normal)
+        }
+        
         viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: view)
     }
     
@@ -576,16 +579,87 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
     // MARK: Sign out process
     
     private func signOut() {
-        guard let session = currentMatrixSession else {
-            MXLog.warning("[AllChatsCoordinator] Unable to sign out due to missing current session.")
+        guard let keyBackup = currentMatrixSession?.crypto.backup else {
             return
         }
         
-        let flowPresenter = SignOutFlowPresenter(session: session, presentingViewController: toPresentable())
-        flowPresenter.delegate = self
+        signOutAlertPresenter.present(for: keyBackup.state,
+                                      areThereKeysToBackup: keyBackup.hasKeysToBackup,
+                                      from: self.allChatsViewController,
+                                      sourceView: avatarMenuButton,
+                                      animated: true)
+    }
+    
+    // MARK: - SecureBackupSetupCoordinatorBridgePresenter
+    
+    private var secureBackupSetupCoordinatorBridgePresenter: SecureBackupSetupCoordinatorBridgePresenter?
+    private var crossSigningSetupCoordinatorBridgePresenter: CrossSigningSetupCoordinatorBridgePresenter?
+
+    private func showSecureBackupSetupFromSignOutFlow() {
+        if canSetupSecureBackup {
+            setupSecureBackup2()
+        } else {
+            // Set up cross-signing first
+            setupCrossSigning(title: VectorL10n.secureKeyBackupSetupIntroTitle,
+                              message: VectorL10n.securitySettingsUserPasswordDescription) { [weak self] result in
+                switch result {
+                case .success(let isCompleted):
+                    if isCompleted {
+                        self?.setupSecureBackup2()
+                    }
+                case .failure:
+                    break
+                }
+            }
+        }
+    }
+    
+    private var canSetupSecureBackup: Bool {
+        return currentMatrixSession?.vc_canSetupSecureBackup() ?? false
+    }
+    
+    private func setupSecureBackup2() {
+        guard let session = currentMatrixSession else {
+            return
+        }
         
-        flowPresenter.start(sourceView: avatarMenuButton)
-        self.signOutFlowPresenter = flowPresenter
+        let secureBackupSetupCoordinatorBridgePresenter = SecureBackupSetupCoordinatorBridgePresenter(session: session, allowOverwrite: true)
+        secureBackupSetupCoordinatorBridgePresenter.delegate = self
+        secureBackupSetupCoordinatorBridgePresenter.present(from: allChatsViewController, animated: true)
+        self.secureBackupSetupCoordinatorBridgePresenter = secureBackupSetupCoordinatorBridgePresenter
+    }
+    
+    private func setupCrossSigning(title: String, message: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let session = currentMatrixSession else {
+            return
+        }
+
+        allChatsViewController.startActivityIndicator()
+        allChatsViewController.view.isUserInteractionEnabled = false
+        
+        let dismissAnimation = { [weak self] in
+            guard let self = self else { return }
+            
+            self.allChatsViewController.stopActivityIndicator()
+            self.allChatsViewController.view.isUserInteractionEnabled = true
+            self.crossSigningSetupCoordinatorBridgePresenter?.dismiss(animated: true, completion: {
+                self.crossSigningSetupCoordinatorBridgePresenter = nil
+            })
+        }
+        
+        let crossSigningSetupCoordinatorBridgePresenter = CrossSigningSetupCoordinatorBridgePresenter(session: session)
+        crossSigningSetupCoordinatorBridgePresenter.present(with: title, message: message, from: allChatsViewController, animated: true) {
+            dismissAnimation()
+            completion(.success(true))
+        } cancel: {
+            dismissAnimation()
+            completion(.success(false))
+        } failure: { error in
+            dismissAnimation()
+            completion(.failure(error))
+        }
+
+        self.crossSigningSetupCoordinatorBridgePresenter = crossSigningSetupCoordinatorBridgePresenter
     }
     
     // MARK: - Private methods
@@ -645,21 +719,42 @@ class AllChatsCoordinator: NSObject, SplitViewMasterCoordinatorProtocol {
         viewController.loadViewIfNeeded()
         return viewController
     }
+    
 }
 
-extension AllChatsCoordinator: SignOutFlowPresenterDelegate {
-    func signOutFlowPresenterDidStartLoading(_ presenter: SignOutFlowPresenter) {
+// MARK: - SignOutAlertPresenterDelegate
+extension AllChatsCoordinator: SignOutAlertPresenterDelegate {
+    
+    func signOutAlertPresenterDidTapSignOutAction(_ presenter: SignOutAlertPresenter) {
+        // Prevent user to perform user interaction in settings when sign out
+        // TODO: Prevent user interaction in all application (navigation controller and split view controller included)
         allChatsViewController.view.isUserInteractionEnabled = false
         allChatsViewController.startActivityIndicator()
+        
+        AppDelegate.theDelegate().logout(withConfirmation: false) { [weak self] isLoggedOut in
+            self?.allChatsViewController.stopActivityIndicator()
+            self?.allChatsViewController.view.isUserInteractionEnabled = true
+        }
     }
     
-    func signOutFlowPresenterDidStopLoading(_ presenter: SignOutFlowPresenter) {
-        allChatsViewController.view.isUserInteractionEnabled = true
-        allChatsViewController.stopActivityIndicator()
+    func signOutAlertPresenterDidTapBackupAction(_ presenter: SignOutAlertPresenter) {
+        showSecureBackupSetupFromSignOutFlow()
     }
     
-    func signOutFlowPresenter(_ presenter: SignOutFlowPresenter, didFailWith error: Error) {
-        AppDelegate.theDelegate().showError(asAlert: error)
+}
+
+// MARK: - SecureBackupSetupCoordinatorBridgePresenterDelegate
+extension AllChatsCoordinator: SecureBackupSetupCoordinatorBridgePresenterDelegate {
+    func secureBackupSetupCoordinatorBridgePresenterDelegateDidCancel(_ coordinatorBridgePresenter: SecureBackupSetupCoordinatorBridgePresenter) {
+        coordinatorBridgePresenter.dismiss(animated: true) {
+            self.secureBackupSetupCoordinatorBridgePresenter = nil
+        }
+    }
+    
+    func secureBackupSetupCoordinatorBridgePresenterDelegateDidComplete(_ coordinatorBridgePresenter: SecureBackupSetupCoordinatorBridgePresenter) {
+        coordinatorBridgePresenter.dismiss(animated: true) {
+            self.secureBackupSetupCoordinatorBridgePresenter = nil
+        }
     }
 }
 

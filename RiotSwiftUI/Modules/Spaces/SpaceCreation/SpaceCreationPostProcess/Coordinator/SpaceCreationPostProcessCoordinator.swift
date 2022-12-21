@@ -17,10 +17,11 @@
  */
 
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
 
 final class SpaceCreationPostProcessCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -49,7 +50,6 @@ final class SpaceCreationPostProcessCoordinator: Coordinator, Presentable {
     }
     
     // MARK: - Public
-
     func start() {
         MXLog.debug("[SpaceCreationPostProcessCoordinator] did start.")
         spaceCreationPostProcessViewModel.completion = { [weak self] result in
@@ -65,6 +65,6 @@ final class SpaceCreationPostProcessCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        spaceCreationPostProcessHostingController
+        return self.spaceCreationPostProcessHostingController
     }
 }

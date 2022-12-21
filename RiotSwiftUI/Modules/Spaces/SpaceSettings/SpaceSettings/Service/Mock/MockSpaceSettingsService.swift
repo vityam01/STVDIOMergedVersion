@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 
 class MockSpaceSettingsService: SpaceSettingsServiceProtocol {
+    
     var spaceId: String
     var roomProperties: SpaceSettingsRoomProperties?
     private(set) var displayName: String?
@@ -35,19 +36,24 @@ class MockSpaceSettingsService: SpaceSettingsServiceProtocol {
         self.spaceId = spaceId
         self.roomProperties = roomProperties
         self.displayName = displayName
-        isLoadingSubject = CurrentValueSubject(isLoading)
+        self.isLoadingSubject = CurrentValueSubject(isLoading)
         self.showPostProcessAlert = CurrentValueSubject(showPostProcessAlert)
-        roomPropertiesSubject = CurrentValueSubject(roomProperties)
-        addressValidationSubject = CurrentValueSubject(.none(spaceId))
+        self.roomPropertiesSubject = CurrentValueSubject(roomProperties)
+        self.addressValidationSubject = CurrentValueSubject(.none(spaceId))
     }
 
-    func update(roomName: String, topic: String, address: String, avatar: UIImage?, completion: ((SpaceSettingsServiceCompletionResult) -> Void)?) { }
-    
-    func addressDidChange(_ newValue: String) { }
-    
-    func simulateUpdate(addressValidationStatus: SpaceCreationSettingsAddressValidationStatus) {
-        addressValidationSubject.value = addressValidationStatus
+    func update(roomName: String, topic: String, address: String, avatar: UIImage?, completion: ((SpaceSettingsServiceCompletionResult) -> Void)?) {
     }
     
-    func trackSpace() { }
+    func addressDidChange(_ newValue: String) {
+        
+    }
+    
+    func simulateUpdate(addressValidationStatus: SpaceCreationSettingsAddressValidationStatus) {
+        self.addressValidationSubject.value = addressValidationStatus
+    }
+    
+    func trackSpace() {
+        
+    }
 }

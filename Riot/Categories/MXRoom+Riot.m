@@ -329,7 +329,7 @@
 {
     if (self.mxSession.crypto)
     {
-        [self.mxSession.crypto trustLevelSummaryForUserIds:@[userId] forceDownload:NO success:^(MXUsersTrustLevelSummary *usersTrustLevelSummary) {
+        [self.mxSession.crypto trustLevelSummaryForUserIds:@[userId] onComplete:^(MXUsersTrustLevelSummary *usersTrustLevelSummary) {
             
             UserEncryptionTrustLevel userEncryptionTrustLevel;
             double trustedDevicesPercentage = usersTrustLevelSummary.trustedDevicesProgress.fractionCompleted;
@@ -341,7 +341,7 @@
             else if (trustedDevicesPercentage == 0.0)
             {
                 // Verify if the user has the user has cross-signing enabled
-                if ([self.mxSession.crypto.crossSigning crossSigningKeysForUser:userId])
+                if ([self.mxSession.crypto crossSigningKeysForUser:userId])
                 {
                     userEncryptionTrustLevel = UserEncryptionTrustLevelNotVerified;
                 }
@@ -357,9 +357,6 @@
             
             onComplete(userEncryptionTrustLevel);
             
-        } failure:^(NSError *error) {
-            MXLogErrorDetails(@"[MXRoom+Riot] Error fetching trust level summary", error);
-            onComplete(UserEncryptionTrustLevelUnknown);
         }];
     }
     else

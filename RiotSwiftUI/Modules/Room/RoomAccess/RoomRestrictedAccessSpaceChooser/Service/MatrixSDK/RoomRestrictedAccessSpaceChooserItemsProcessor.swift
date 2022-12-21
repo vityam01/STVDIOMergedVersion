@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,7 @@
 import Foundation
 
 class RoomRestrictedAccessSpaceChooserItemsProcessor: MatrixItemChooserProcessorProtocol {
+    
     // MARK: Private
     
     private let roomId: String
@@ -27,7 +28,7 @@ class RoomRestrictedAccessSpaceChooserItemsProcessor: MatrixItemChooserProcessor
     init(roomId: String, session: MXSession) {
         self.roomId = roomId
         self.session = session
-        dataSource = MatrixItemChooserRoomRestrictedAllowedParentsDataSource(roomId: roomId)
+        self.dataSource = MatrixItemChooserRoomRestrictedAllowedParentsDataSource(roomId: roomId)
     }
     
     // MARK: MatrixItemChooserSelectionProcessorProtocol
@@ -49,7 +50,7 @@ class RoomRestrictedAccessSpaceChooserItemsProcessor: MatrixItemChooserProcessor
         }
     }
     
-    func isItemIncluded(_ item: MatrixListItemData) -> Bool {
-        true
+    func isItemIncluded(_ item: (MatrixListItemData)) -> Bool {
+        return true
     }
 }

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import RiotSwiftUI
 import XCTest
+import RiotSwiftUI
 
 class AuthenticationVerifyMsisdnUITests: MockScreenTestCase {
     func testEmptyPhoneNumber() {
@@ -127,4 +127,5 @@ class AuthenticationVerifyMsisdnUITests: MockScreenTestCase {
         XCTAssertTrue(backButton.exists, "Back button should be shown.")
         XCTAssertEqual(backButton.label, "Back")
     }
+
 }

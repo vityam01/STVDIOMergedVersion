@@ -102,10 +102,7 @@ static MXSession *fakeSession;
     [session setStore:self.fileStore success:^{
         MXStrongifyAndReturnIfNil(session);
         
-        if ([session.crypto isKindOfClass:[MXLegacyCrypto class]])
-        {
-            ((MXLegacyCrypto *)session.crypto).warnOnUnknowDevices = NO; // Do not warn for unknown devices. We have cross-signing now
-        }
+        session.crypto.warnOnUnknowDevices = NO; // Do not warn for unknown devices. We have cross-signing now
         
         self.selectedRooms = [NSMutableArray array];
         for (NSString *roomIdentifier in roomIdentifiers) {

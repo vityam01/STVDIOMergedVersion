@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,21 +17,22 @@
 import SwiftUI
 
 struct RoundedBorderTextField: View {
+    
     // MARK: - Properties
     
-    var title: String?
+    var title: String? = nil
     let placeHolder: String
     @Binding var text: String
-    var footerText: String?
-    var isError = false
+    var footerText: String? = nil
+    var isError: Bool = false
     var isFirstResponder = false
 
-    var configuration = UIKitTextInputConfiguration()
+    var configuration: UIKitTextInputConfiguration = UIKitTextInputConfiguration()
     @State var isSecureTextVisible = false
     
-    var onTextChanged: ((String) -> Void)?
-    var onEditingChanged: ((Bool) -> Void)?
-    var onCommit: (() -> Void)?
+    var onTextChanged: ((String) -> Void)? = nil
+    var onEditingChanged: ((Bool) -> Void)? = nil
+    var onCommit: (() -> Void)? = nil
 
     // MARK: Private
     
@@ -100,7 +101,7 @@ struct RoundedBorderTextField: View {
     private var borderColor: Color {
         if isEditing {
             return theme.colors.accent
-        } else if footerText != nil, isError {
+        } else if footerText != nil && isError {
             return theme.colors.alert
         } else {
             return theme.colors.quinaryContent
@@ -117,6 +118,7 @@ struct RoundedBorderTextField: View {
 
 struct TextFieldWithError_Previews: PreviewProvider {
     static var previews: some View {
+
         Group {
             sampleView.theme(.light).preferredColorScheme(.light)
             sampleView.theme(.dark).preferredColorScheme(.dark)

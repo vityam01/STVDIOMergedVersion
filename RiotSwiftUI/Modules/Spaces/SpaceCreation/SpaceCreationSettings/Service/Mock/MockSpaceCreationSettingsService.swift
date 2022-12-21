@@ -1,6 +1,6 @@
 // File created from TemplateAdvancedRoomsExample
 // $ createSwiftUITwoScreen.sh Spaces/SpaceCreation SpaceCreation SpaceCreationMenu SpaceCreationSettings
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,19 @@
 // limitations under the License.
 //
 
-import Combine
 import Foundation
+import Combine
 
 class MockSpaceCreationSettingsService: SpaceCreationSettingsServiceProtocol {
+    
+
     var addressValidationSubject: CurrentValueSubject<SpaceCreationSettingsAddressValidationStatus, Never>
     var avatarViewDataSubject: CurrentValueSubject<AvatarInputProtocol, Never>
     var defaultAddressSubject: CurrentValueSubject<String, Never>
     var spaceAddress: String?
     var roomName: String
     var userDefinedAddress: String?
-    var isAddressValid = true
+    var isAddressValid: Bool = true
 
     init() {
         roomName = "Fake"
@@ -36,7 +38,7 @@ class MockSpaceCreationSettingsService: SpaceCreationSettingsServiceProtocol {
     }
     
     func simulateUpdate(addressValidationStatus: SpaceCreationSettingsAddressValidationStatus) {
-        addressValidationSubject.value = addressValidationStatus
+        self.addressValidationSubject.value = addressValidationStatus
     }
     
 //    func simulateUpdate()

@@ -17,7 +17,8 @@
 import Foundation
 
 class PollPlainCell: SizableBaseRoomCell, RoomCellReactionsDisplayable, RoomCellReadMarkerDisplayable {
-
+    
+    private var pollView: UIView?
     private var event: MXEvent?
     
     override func render(_ cellData: MXKCellData!) {
@@ -27,12 +28,12 @@ class PollPlainCell: SizableBaseRoomCell, RoomCellReactionsDisplayable, RoomCell
               let bubbleData = cellData as? RoomBubbleCellData,
               let event = bubbleData.events.last,
               event.eventType == __MXEventType.pollStart,
-              let controller = TimelinePollProvider.shared.buildTimelinePollVCForEvent(event) else {
+              let view = TimelinePollProvider.shared.buildTimelinePollViewForEvent(event) else {
             return
         }
         
         self.event = event
-        self.addContentViewController(controller, on: contentView)
+        self.addPollView(view, on: contentView)
     }
     
     override func setupViews() {
@@ -50,6 +51,13 @@ class PollPlainCell: SizableBaseRoomCell, RoomCellReactionsDisplayable, RoomCell
         }
         
         delegate.cell(self, didRecognizeAction: kMXKRoomBubbleCellTapOnContentView, userInfo: [kMXKRoomBubbleCellEventKey: event])
+    }
+    
+    func addPollView(_ pollView: UIView, on contentView: UIView) {
+        
+        self.pollView?.removeFromSuperview()
+        contentView.vc_addSubViewMatchingParent(pollView)
+        self.pollView = pollView
     }
 }
 
