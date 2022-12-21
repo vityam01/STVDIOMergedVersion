@@ -17,6 +17,7 @@
 import SwiftUI
 
 struct MatrixItemChooserListRow: View {
+
     // MARK: - Properties
     
     // MARK: Private
@@ -33,7 +34,7 @@ struct MatrixItemChooserListRow: View {
     
     @ViewBuilder
     var body: some View {
-        HStack {
+        HStack{
             if type == .space {
                 SpaceAvatarImage(avatarData: avatar, size: .small)
             } else {

@@ -29,10 +29,6 @@ extension AuthenticationType {
                 return .Apple
             case .facebook:
                 return .Facebook
-            case .github:
-                return .GitHub
-            case .gitlab:
-                return .GitLab
             case .google:
                 return .Google
             default:

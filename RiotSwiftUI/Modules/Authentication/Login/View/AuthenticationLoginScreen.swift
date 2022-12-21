@@ -17,6 +17,7 @@
 import SwiftUI
 
 struct AuthenticationLoginScreen: View {
+
     // MARK: - Properties
     
     // MARK: Private
@@ -38,9 +39,6 @@ struct AuthenticationLoginScreen: View {
                     .padding(.top, OnboardingMetrics.topPaddingToNavigationBar)
                     .padding(.bottom, 28)
                 
-                serverInfo
-                    .padding(.leading, 12)
-                    .padding(.bottom, 16)
                 
                 Rectangle()
                     .fill(theme.colors.quinaryContent)
@@ -50,25 +48,25 @@ struct AuthenticationLoginScreen: View {
                 if viewModel.viewState.homeserver.showLoginForm {
                     loginForm
                 }
-
-                if viewModel.viewState.homeserver.showQRLogin {
-                    qrLoginButton
-                }
                 
-                if viewModel.viewState.homeserver.showLoginForm, viewModel.viewState.showSSOButtons {
+                if viewModel.viewState.homeserver.showLoginForm && viewModel.viewState.showSSOButtons {
                     Text(VectorL10n.or)
                         .foregroundColor(theme.colors.secondaryContent)
                         .padding(.top, 16)
                 }
+                termsAndConditionLabel
+                    .padding(.top, 16)
+                    .padding(.leading, 5)
                 
                 if viewModel.viewState.showSSOButtons {
                     ssoButtons
                         .padding(.top, 16)
                 }
 
-                if !viewModel.viewState.homeserver.showLoginForm, !viewModel.viewState.showSSOButtons {
+                if !viewModel.viewState.homeserver.showLoginForm && !viewModel.viewState.showSSOButtons {
                     fallbackButton
                 }
+                
             }
             .readableFrame()
             .padding(.horizontal, 16)
@@ -87,15 +85,21 @@ struct AuthenticationLoginScreen: View {
             .foregroundColor(theme.colors.primaryContent)
     }
     
-    /// The sever information section that includes a button to select a different server.
-    var serverInfo: some View {
-        AuthenticationServerInfoSection(address: viewModel.viewState.homeserver.address,
-                                        flow: .login) {
-            viewModel.send(viewAction: .selectServer)
+    var termsAndConditionLabel: some View {
+        VStack {
+            let link = "By using STVDIO Space you agree to the [STVDIO Space Terms and Conditions](https://stvd.io/terms-and-conditions/)"
+            Text(.init(link))
         }
     }
-    
-    /// The form with text fields for username and password, along with a submit button.
+        /// The sever information section that includes a button to select a different server.
+        //    var serverInfo: some View {
+        //        AuthenticationServerInfoSection(address: viewModel.viewState.homeserver.address,
+        //                                        flow: .login) {
+        //            viewModel.send(viewAction: .selectServer)
+        //        }
+        //    }
+        
+        /// The form with text fields for username and password, along with a submit button.
     var loginForm: some View {
         VStack(spacing: 14) {
             RoundedBorderTextField(placeHolder: VectorL10n.authenticationLoginUsername,
@@ -106,8 +110,8 @@ struct AuthenticationLoginScreen: View {
                                                                               autocorrectionType: .no),
                                    onEditingChanged: usernameEditingChanged,
                                    onCommit: { isPasswordFocused = true })
-                .accessibilityIdentifier("usernameTextField")
-                .padding(.bottom, 7)
+            .accessibilityIdentifier("usernameTextField")
+            .padding(.bottom, 7)
             
             RoundedBorderTextField(placeHolder: VectorL10n.authPasswordPlaceholder,
                                    text: $viewModel.password,
@@ -116,7 +120,7 @@ struct AuthenticationLoginScreen: View {
                                                                               isSecureTextEntry: true),
                                    onEditingChanged: passwordEditingChanged,
                                    onCommit: submit)
-                .accessibilityIdentifier("passwordTextField")
+            .accessibilityIdentifier("passwordTextField")
             
             Button { viewModel.send(viewAction: .forgotPassword) } label: {
                 Text(VectorL10n.authenticationLoginForgotPassword)
@@ -133,21 +137,11 @@ struct AuthenticationLoginScreen: View {
             .accessibilityIdentifier("nextButton")
         }
     }
-
-    /// A QR login button that can be used for login.
-    var qrLoginButton: some View {
-        Button(action: qrLogin) {
-            Text(VectorL10n.authenticationLoginWithQr)
-        }
-        .buttonStyle(SecondaryActionButtonStyle(font: theme.fonts.bodySB))
-        .padding(.vertical)
-        .accessibilityIdentifier("qrLoginButton")
-    }
     
     /// A list of SSO buttons that can be used for login.
     var ssoButtons: some View {
         VStack(spacing: 16) {
-            ForEach(viewModel.viewState.homeserver.ssoIdentityProviders) { provider in
+            ForEach(viewModel.viewState.homeserver.ssoIdentityProviders.filter{ $0.name != "GitHub" && $0.name != "GitLab" }) { provider in
                 AuthenticationSSOButton(provider: provider) {
                     viewModel.send(viewAction: .continueWithSSO(provider))
                 }
@@ -187,11 +181,6 @@ struct AuthenticationLoginScreen: View {
     /// Sends the `fallback` view action.
     func fallback() {
         viewModel.send(viewAction: .fallback)
-    }
-
-    /// Sends the `qrLogin` view action.
-    func qrLogin() {
-        viewModel.send(viewAction: .qrLogin)
     }
 }
 

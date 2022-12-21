@@ -22,6 +22,7 @@ struct SpaceSettingsCoordinatorParameters {
 }
 
 final class SpaceSettingsCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -76,9 +77,9 @@ final class SpaceSettingsCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        spaceSettingsHostingController
+        return self.spaceSettingsHostingController
+        
     }
-
     // MARK: - Private
     
     private func pickImage(from sourceRect: CGRect) {
@@ -89,7 +90,6 @@ final class SpaceSettingsCoordinator: Coordinator, Presentable {
 }
 
 // MARK: - SingleImagePickerPresenterDelegate
-
 extension SpaceSettingsCoordinator: SingleImagePickerPresenterDelegate {
     func singleImagePickerPresenter(_ presenter: SingleImagePickerPresenter, didSelectImageData imageData: Data, withUTI uti: MXKUTI?) {
         spaceSettingsViewModel.updateAvatarImage(with: UIImage(data: imageData))

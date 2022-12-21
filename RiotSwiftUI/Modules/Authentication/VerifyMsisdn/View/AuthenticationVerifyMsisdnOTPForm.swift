@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2022 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@ import SwiftUI
 
 /// The form shown to enter an OTP for phone number vaildation
 struct AuthenticationVerifyMsisdnOTPForm: View {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -64,7 +65,7 @@ struct AuthenticationVerifyMsisdnOTPForm: View {
     
     /// The text field and submit button where the user enters an OTP.
     var mainContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        return VStack(alignment: .leading, spacing: 12) {
             if #available(iOS 15.0, *) {
                 textField
                     .onSubmit(submitOTP)
@@ -92,7 +93,7 @@ struct AuthenticationVerifyMsisdnOTPForm: View {
     
     /// The text field, extracted for iOS 15 modifiers to be applied.
     var textField: some View {
-        TextField(VectorL10n.authenticationVerifyMsisdnOtpTextFieldPlaceholder, text: $viewModel.otp) {
+        return TextField(VectorL10n.authenticationVerifyMsisdnOtpTextFieldPlaceholder, text: $viewModel.otp) {
             isEditingTextField = $0
         }
         .textFieldStyle(BorderedInputFieldStyle(isEditing: isEditingTextField, isError: false))
@@ -103,7 +104,7 @@ struct AuthenticationVerifyMsisdnOTPForm: View {
     
     /// Sends the `submitOTP` view action so long as a valid OTP has been input.
     func submitOTP() {
-        guard viewModel.viewState.hasSentSMS, !viewModel.viewState.hasInvalidOTP else { return }
+        guard viewModel.viewState.hasSentSMS && !viewModel.viewState.hasInvalidOTP else { return }
         viewModel.send(viewAction: .submitOTP)
     }
 }

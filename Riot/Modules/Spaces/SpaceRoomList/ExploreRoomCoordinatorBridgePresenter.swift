@@ -56,12 +56,17 @@ final class ExploreRoomCoordinatorBridgePresenter: NSObject {
     //     self.present(from: viewController, animated: animated)
     // }
     
-    func present(from viewController: UIViewController, animated: Bool) {
+    func present(from viewController: UIViewController, animated: Bool, presentationStyle: UIModalPresentationStyle = .none) {
         let exploreRoomCoordinator = ExploreRoomCoordinator(session: self.session, spaceId: self.spaceId)
         exploreRoomCoordinator.delegate = self
         let presentable = exploreRoomCoordinator.toPresentable()
         presentable.presentationController?.delegate = self
-        viewController.present(presentable, animated: animated, completion: nil)
+        if presentationStyle != .none {
+            viewController.modalPresentationStyle = .fullScreen
+            presentable.modalPresentationStyle = .fullScreen
+        }
+        
+        viewController.present(presentable, animated: animated, completion: nil)        
         exploreRoomCoordinator.start()
         
         self.coordinator = exploreRoomCoordinator

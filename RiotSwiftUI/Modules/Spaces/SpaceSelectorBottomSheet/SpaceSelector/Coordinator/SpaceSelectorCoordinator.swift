@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import CommonKit
 import SwiftUI
+import CommonKit
 
 struct SpaceSelectorCoordinatorParameters {
     let session: MXSession
@@ -38,6 +38,7 @@ struct SpaceSelectorCoordinatorParameters {
 }
 
 final class SpaceSelectorCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -98,7 +99,7 @@ final class SpaceSelectorCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        hostingViewController
+        return self.hostingViewController
     }
     
     // MARK: - Private

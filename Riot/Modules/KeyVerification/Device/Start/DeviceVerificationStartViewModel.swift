@@ -29,7 +29,7 @@ final class DeviceVerificationStartViewModel: DeviceVerificationStartViewModelTy
     private let otherUser: MXUser
     private let otherDevice: MXDeviceInfo
 
-    private var request: MXKeyVerificationRequest?
+    private var transaction: MXSASTransaction!
     
     // MARK: Public
 
@@ -52,12 +52,12 @@ final class DeviceVerificationStartViewModel: DeviceVerificationStartViewModelTy
         case .beginVerifying:
             self.beginVerifying()
         case .verifyUsingLegacy:
-           self.cancelRequest()
+           self.cancelTransaction()
            self.update(viewState: .verifyUsingLegacy(self.session, self.otherDevice))
         case .verifiedUsingLegacy:
             self.coordinatorDelegate?.deviceVerificationStartViewModelDidUseLegacyVerification(self)
         case .cancel:
-            self.cancelRequest()
+            self.cancelTransaction()
             self.coordinatorDelegate?.deviceVerificationStartViewModelDidCancel(self)
         }
     }
@@ -67,22 +67,30 @@ final class DeviceVerificationStartViewModel: DeviceVerificationStartViewModelTy
     private func beginVerifying() {
         self.update(viewState: .loading)
 
-        self.verificationManager.requestVerificationByToDevice(withUserId: otherUser.userId, deviceIds: [otherDevice.deviceId], methods: [MXKeyVerificationMethodSAS], success: { [weak self] request in
-            guard let self = self else {
+        self.verificationManager.beginKeyVerification(withUserId: self.otherUser.userId, andDeviceId: self.otherDevice.deviceId, method: MXKeyVerificationMethodSAS, success: { [weak self] (transaction) in
+
+            guard let sself = self else {
+                return
+            }
+            guard let sasTransaction: MXOutgoingSASTransaction = transaction as? MXOutgoingSASTransaction  else {
                 return
             }
 
-            self.request = request
+            sself.transaction = sasTransaction
 
-            self.update(viewState: .loaded)
-            self.registerKeyVerificationRequestDidChangeNotification(for: request)
+            sself.update(viewState: .loaded)
+            sself.registerTransactionDidStateChangeNotification(transaction: sasTransaction)
         }, failure: {[weak self]  error in
             self?.update(viewState: .error(error))
         })
     }
 
-    private func cancelRequest() {
-        request?.cancel(with: MXTransactionCancelCode.user(), success: nil)
+    private func cancelTransaction() {
+        guard let transaction = self.transaction  else {
+            return
+        }
+
+        transaction.cancel(with: MXTransactionCancelCode.user())
     }
     
     private func update(viewState: DeviceVerificationStartViewState) {
@@ -90,41 +98,37 @@ final class DeviceVerificationStartViewModel: DeviceVerificationStartViewModelTy
     }
 
 
-    // MARK: - MXKeyVerificationRequestDidChange
+    // MARK: - MXKeyVerificationTransactionDidChange
 
-    private func registerKeyVerificationRequestDidChangeNotification(for request: MXKeyVerificationRequest) {
-        NotificationCenter.default.addObserver(self, selector: #selector(requestDidStateChange(notification:)), name: .MXKeyVerificationRequestDidChange, object: request)
+    private func registerTransactionDidStateChangeNotification(transaction: MXOutgoingSASTransaction) {
+        NotificationCenter.default.addObserver(self, selector: #selector(transactionDidStateChange(notification:)), name: NSNotification.Name.MXKeyVerificationTransactionDidChange, object: transaction)
     }
     
-    private func unregisterKeyVerificationRequestDidChangeNotification() {
-        NotificationCenter.default.removeObserver(self, name: .MXKeyVerificationRequestDidChange, object: nil)
+    private func unregisterTransactionDidStateChangeNotification() {
+        NotificationCenter.default.removeObserver(self, name: .MXKeyVerificationTransactionDidChange, object: nil)
     }
-    
-    @objc private func requestDidStateChange(notification: Notification) {
-        guard let request = notification.object as? MXKeyVerificationRequest, request.requestId == self.request?.requestId else {
+
+    @objc private func transactionDidStateChange(notification: Notification) {
+        guard let transaction = notification.object as? MXOutgoingSASTransaction else {
             return
         }
 
-        switch request.state {
-        case MXKeyVerificationRequestStateAccepted, MXKeyVerificationRequestStateReady:
-            self.unregisterKeyVerificationRequestDidChangeNotification()
-            self.coordinatorDelegate?.deviceVerificationStartViewModel(self, otherDidAcceptRequest: request)
-            
-        case MXKeyVerificationRequestStateCancelled:
-            guard let reason = request.reasonCancelCode else {
+        switch transaction.state {
+        case MXSASTransactionStateShowSAS:
+            self.unregisterTransactionDidStateChangeNotification()
+            self.coordinatorDelegate?.deviceVerificationStartViewModel(self, didCompleteWithOutgoingTransaction: transaction)
+        case MXSASTransactionStateCancelled:
+            guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterKeyVerificationRequestDidChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelled(reason))
-        case MXKeyVerificationRequestStateCancelledByMe:
-            guard let reason = request.reasonCancelCode else {
+        case MXSASTransactionStateCancelledByMe:
+            guard let reason = transaction.reasonCancelCode else {
                 return
             }
-            self.unregisterKeyVerificationRequestDidChangeNotification()
+            self.unregisterTransactionDidStateChangeNotification()
             self.update(viewState: .cancelledByMe(reason))
-        case MXKeyVerificationRequestStateExpired:
-            self.unregisterKeyVerificationRequestDidChangeNotification()
-            self.update(viewState: .error(UserVerificationStartViewModelError.keyVerificationRequestExpired))
         default:
             break
         }

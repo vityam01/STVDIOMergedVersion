@@ -16,9 +16,12 @@
 
 import SwiftUI
 
-typealias AuthenticationServerSelectionViewModelType = StateStoreViewModel<AuthenticationServerSelectionViewState, AuthenticationServerSelectionViewAction>
+typealias AuthenticationServerSelectionViewModelType = StateStoreViewModel<AuthenticationServerSelectionViewState,
+                                                                           Never,
+                                                                           AuthenticationServerSelectionViewAction>
 
 class AuthenticationServerSelectionViewModel: AuthenticationServerSelectionViewModelType, AuthenticationServerSelectionViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Private

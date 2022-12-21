@@ -156,7 +156,6 @@ TableViewSectionsDelegate>
     // Do any additional setup after loading the view, typically from a nib.
     
     self.navigationItem.title = [VectorL10n securitySettingsTitle];
-    [self vc_setLargeTitleDisplayMode:UINavigationItemLargeTitleDisplayModeNever];
     [self vc_removeBackTitle];
 
     [self.tableView registerClass:MXKTableViewCellWithLabelAndSwitch.class forCellReuseIdentifier:[MXKTableViewCellWithLabelAndSwitch defaultReuseIdentifier]];
@@ -324,7 +323,7 @@ TableViewSectionsDelegate>
     
     // Crypto sessions section
         
-    if (RiotSettings.shared.settingsSecurityScreenShowSessions && !RiotSettings.shared.enableNewSessionManager)
+    if (RiotSettings.shared.settingsSecurityScreenShowSessions)
     {
         Section *sessionsSection = [Section sectionWithTag:SECTION_CRYPTO_SESSIONS];
         
@@ -627,7 +626,7 @@ TableViewSectionsDelegate>
 
 - (void)loadCrossSigning
 {
-    id<MXCrossSigning> crossSigning = self.mainSession.crypto.crossSigning;
+    MXCrossSigning *crossSigning = self.mainSession.crypto.crossSigning;
     
     [crossSigning refreshStateWithSuccess:^(BOOL stateUpdated) {
         if (stateUpdated)
@@ -643,7 +642,7 @@ TableViewSectionsDelegate>
 {
     NSInteger numberOfRowsInCrossSigningSection;
     
-    id<MXCrossSigning> crossSigning = self.mainSession.crypto.crossSigning;
+    MXCrossSigning *crossSigning = self.mainSession.crypto.crossSigning;
     switch (crossSigning.state)
     {
         case MXCrossSigningStateNotBootstrapped:                // Action: Bootstrap
@@ -661,7 +660,7 @@ TableViewSectionsDelegate>
 
 - (NSAttributedString*)crossSigningInformation
 {
-    id<MXCrossSigning> crossSigning = self.mainSession.crypto.crossSigning;
+    MXCrossSigning *crossSigning = self.mainSession.crypto.crossSigning;
     
     NSString *crossSigningInformation;
     switch (crossSigning.state)
@@ -708,7 +707,7 @@ TableViewSectionsDelegate>
     buttonCell.mxkButton.accessibilityIdentifier = nil;
     
     // And customise it
-    id<MXCrossSigning> crossSigning = self.mainSession.crypto.crossSigning;
+    MXCrossSigning *crossSigning = self.mainSession.crypto.crossSigning;
     switch (crossSigning.state)
     {
         case MXCrossSigningStateNotBootstrapped:                // Action: Bootstrap
@@ -1218,9 +1217,9 @@ TableViewSectionsDelegate>
         cell = [secureBackupSection cellForRowAtRow:rowTag];
     }
 #ifdef CROSS_SIGNING_AND_BACKUP_DEV
-    else if (sectionTag == SECTION_KEYBACKUP)
+    else if (section == SECTION_KEYBACKUP)
     {
-        cell = [keyBackupSection cellForRowAtRow:rowTag];
+        cell = [keyBackupSection cellForRowAtRow:row];
     }
 #endif
     else if (sectionTag == SECTION_CROSSSIGNING)

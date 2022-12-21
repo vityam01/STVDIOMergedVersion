@@ -183,10 +183,6 @@ import MediaPlayer
     }
     
     private func setUpRemoteCommandCenter() {
-        guard BuildSettings.allowBackgroundAudioMessagePlayback else {
-            return
-        }
-        
         displayLink.isPaused = false
         
         UIApplication.shared.beginReceivingRemoteControlEvents()
@@ -256,8 +252,14 @@ import MediaPlayer
             return
         }
         
+        let artwork = MPMediaItemArtwork(boundsSize: Constants.roomAvatarImageSize) { [weak self] size in
+            return self?.roomAvatar ?? UIImage()
+        }
+        
         let nowPlayingInfoCenter = MPNowPlayingInfoCenter.default()
-        nowPlayingInfoCenter.nowPlayingInfo = [MPMediaItemPropertyTitle: VectorL10n.voiceMessageLockScreenPlaceholder,
+        nowPlayingInfoCenter.nowPlayingInfo = [MPMediaItemPropertyTitle: audioPlayer.displayName ?? VectorL10n.voiceMessageLockScreenPlaceholder,
+                                               MPMediaItemPropertyArtist: currentRoomSummary?.displayname as Any,
+                                               MPMediaItemPropertyArtwork: artwork,
                                                MPMediaItemPropertyPlaybackDuration: audioPlayer.duration as Any,
                                                MPNowPlayingInfoPropertyElapsedPlaybackTime: audioPlayer.currentTime as Any]
     }

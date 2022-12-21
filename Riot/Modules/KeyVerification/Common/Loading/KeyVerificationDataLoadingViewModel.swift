@@ -19,6 +19,7 @@
 import Foundation
 
 enum KeyVerificationDataLoadingViewModelError: Error {
+    case unknown
     case transactionCancelled
     case transactionCancelledByMe(reason: MXTransactionCancelCode)
 }
@@ -136,7 +137,9 @@ final class KeyVerificationDataLoadingViewModel: KeyVerificationDataLoadingViewM
                         return
                     }
                     
-                    sself.update(viewState: .error(error))
+                    let finalError = error ?? KeyVerificationDataLoadingViewModelError.unknown
+                    
+                    sself.update(viewState: .error(finalError))
             })
             
         } else {

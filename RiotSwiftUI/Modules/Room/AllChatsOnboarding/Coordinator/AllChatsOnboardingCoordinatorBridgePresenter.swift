@@ -26,6 +26,7 @@ import Foundation
 /// Each bridge should be removed once the underlying Coordinator has been integrated by another Coordinator.
 @objcMembers
 final class AllChatsOnboardingCoordinatorBridgePresenter: NSObject {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -52,7 +53,7 @@ final class AllChatsOnboardingCoordinatorBridgePresenter: NSObject {
     }
     
     func dismiss(animated: Bool, completion: (() -> Void)?) {
-        guard let coordinator = coordinator else {
+        guard let coordinator = self.coordinator else {
             return
         }
         coordinator.toPresentable().dismiss(animated: animated) {
@@ -61,3 +62,4 @@ final class AllChatsOnboardingCoordinatorBridgePresenter: NSObject {
         }
     }
 }
+

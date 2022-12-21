@@ -17,10 +17,11 @@
  */
 
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
 
 final class SpaceCreationEmailInvitesCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -74,7 +75,7 @@ final class SpaceCreationEmailInvitesCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        spaceCreationEmailInvitesHostingController
+        return self.spaceCreationEmailInvitesHostingController
     }
     
     // MARK: - Identity service
@@ -89,34 +90,34 @@ final class SpaceCreationEmailInvitesCoordinator: Coordinator, Presentable {
 
         let presenter = ServiceTermsModalCoordinatorBridgePresenter(session: parameters.session, baseUrl: baseUrl, serviceType: MXServiceTypeIdentityService, accessToken: accessToken)
         presenter.delegate = self
-        presenter.present(from: toPresentable(), animated: true)
+        presenter.present(from: self.toPresentable(), animated: true)
         serviceTermsModalCoordinatorBridgePresenter = presenter
     }
     
     private func showIdentityServiceFailure(_ error: Error?) {
         let alertController = UIAlertController(title: VectorL10n.findYourContactsIdentityServiceError, message: nil, preferredStyle: .alert)
         alertController.addAction(UIAlertAction(title: VectorL10n.ok, style: .default, handler: nil))
-        toPresentable().present(alertController, animated: true, completion: nil)
+        self.toPresentable().present(alertController, animated: true, completion: nil);
     }
 }
 
 extension SpaceCreationEmailInvitesCoordinator: ServiceTermsModalCoordinatorBridgePresenterDelegate {
     func serviceTermsModalCoordinatorBridgePresenterDelegateDidAccept(_ coordinatorBridgePresenter: ServiceTermsModalCoordinatorBridgePresenter) {
         coordinatorBridgePresenter.dismiss(animated: true) {
-            self.serviceTermsModalCoordinatorBridgePresenter = nil
+            self.serviceTermsModalCoordinatorBridgePresenter = nil;
             self.callback?(.done)
         }
     }
     
     func serviceTermsModalCoordinatorBridgePresenterDelegateDidDecline(_ coordinatorBridgePresenter: ServiceTermsModalCoordinatorBridgePresenter, session: MXSession) {
         coordinatorBridgePresenter.dismiss(animated: true) {
-            self.serviceTermsModalCoordinatorBridgePresenter = nil
+            self.serviceTermsModalCoordinatorBridgePresenter = nil;
         }
     }
     
     func serviceTermsModalCoordinatorBridgePresenterDelegateDidClose(_ coordinatorBridgePresenter: ServiceTermsModalCoordinatorBridgePresenter) {
         coordinatorBridgePresenter.dismiss(animated: true) {
-            self.serviceTermsModalCoordinatorBridgePresenter = nil
+            self.serviceTermsModalCoordinatorBridgePresenter = nil;
         }
     }
 }

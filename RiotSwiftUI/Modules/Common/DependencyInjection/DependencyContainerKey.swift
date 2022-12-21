@@ -33,6 +33,7 @@ extension EnvironmentValues {
 }
 
 extension View {
+    
     /// A modifier for adding a dependency to the SwiftUI view hierarchy's dependency container.
     ///
     /// Important: When adding a dependency to cast it to the type in which it will be injected.

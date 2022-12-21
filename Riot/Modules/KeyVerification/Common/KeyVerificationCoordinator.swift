@@ -240,7 +240,7 @@ final class KeyVerificationCoordinator: KeyVerificationCoordinatorType {
         }
     }
 
-    private func showIncoming(otherUser: MXUser, transaction: MXSASTransaction) {
+    private func showIncoming(otherUser: MXUser, transaction: MXIncomingSASTransaction) {
         let coordinator = DeviceVerificationIncomingCoordinator(session: self.session, otherUser: otherUser, transaction: transaction)
         coordinator.delegate = self
         coordinator.start()
@@ -324,8 +324,12 @@ extension KeyVerificationCoordinator: KeyVerificationDataLoadingCoordinatorDeleg
 
 // MARK: - DeviceVerificationStartCoordinatorDelegate
 extension KeyVerificationCoordinator: DeviceVerificationStartCoordinatorDelegate {
-    func deviceVerificationStartCoordinator(_ coordinator: DeviceVerificationStartCoordinatorType, otherDidAcceptRequest request: MXKeyVerificationRequest) {
-        self.showVerifyByScanning(keyVerificationRequest: request, animated: true)
+    func deviceVerificationStartCoordinator(_ coordinator: DeviceVerificationStartCoordinatorType, didCompleteWithOutgoingTransaction transaction: MXSASTransaction) {
+        self.showVerifyBySAS(transaction: transaction, animated: true)
+    }
+
+    func deviceVerificationStartCoordinator(_ coordinator: DeviceVerificationStartCoordinatorType, didTransactionCancelled transaction: MXSASTransaction) {
+        self.didCancel()
     }
 
     func deviceVerificationStartCoordinatorDidCancel(_ coordinator: DeviceVerificationStartCoordinatorType) {
@@ -425,7 +429,7 @@ extension KeyVerificationCoordinator: KeyVerificationSelfVerifyWaitCoordinatorDe
         self.showVerifyByScanning(keyVerificationRequest: keyVerificationRequest, animated: true)
     }
     
-    func keyVerificationSelfVerifyWaitCoordinator(_ coordinator: KeyVerificationSelfVerifyWaitCoordinatorType, didAcceptIncomingSASTransaction incomingSASTransaction: MXSASTransaction) {
+    func keyVerificationSelfVerifyWaitCoordinator(_ coordinator: KeyVerificationSelfVerifyWaitCoordinatorType, didAcceptIncomingSASTransaction incomingSASTransaction: MXIncomingSASTransaction) {
         self.showVerifyBySAS(transaction: incomingSASTransaction, animated: true)                
     }
     

@@ -195,9 +195,7 @@ UINavigationControllerDelegate
 - (BOOL)presentIncomingKeyVerificationRequest:(id<MXKeyVerificationRequest>)incomingKeyVerificationRequest
                                     inSession:(MXSession*)session;
 
-- (BOOL)presentUserVerificationForRoomMember:(MXRoomMember*)roomMember
-                                     session:(MXSession*)mxSession
-                                  completion:(void (^)(void))completion;
+- (BOOL)presentUserVerificationForRoomMember:(MXRoomMember*)roomMember session:(MXSession*)mxSession;
 
 - (BOOL)presentCompleteSecurityForSession:(MXSession*)mxSession;
 

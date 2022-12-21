@@ -24,9 +24,6 @@ schemes:
       disableMainThreadChecker: true
       targets:
       - RiotTests
-      gatherCoverageData: true
-      coverageTargets:
-        - Riot
 
 targets:
   RiotTests:
@@ -63,8 +60,6 @@ targets:
     - path: ../Config/AppConfiguration.swift
     - path: ../Config/CommonConfiguration.swift
     - path: ../Riot/Categories/Bundle.swift
-    - path: ../Riot/Managers/AppInfo/AppInfo.swift
-    - path: ../Riot/Managers/AppInfo/AppVersion.swift
     - path: ../Riot/Managers/Settings/RiotSettings.swift
     - path: ../Riot/Managers/EncryptionKeyManager/EncryptionKeyManager.swift
     - path: ../Riot/Managers/KeyValueStorage/
@@ -72,4 +67,3 @@ targets:
     - path: ../Riot/Modules/Room/TimelineCells/Styles/RoomTimelineStyleIdentifier.swift
     - path: ../Riot/Modules/Room/EventMenu/EventMenuBuilder.swift
     - path: ../Riot/Modules/Room/EventMenu/EventMenuItemType.swift
-    - path: ../Riot/Modules/VoiceBroadcast/VoiceBroadcastSDK/VoiceBroadcastSettings.swift

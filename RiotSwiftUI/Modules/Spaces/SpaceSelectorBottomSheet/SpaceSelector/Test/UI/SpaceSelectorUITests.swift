@@ -14,15 +14,16 @@
 // limitations under the License.
 //
 
-import RiotSwiftUI
 import XCTest
+import RiotSwiftUI
 
 class SpaceSelectorUITests: MockScreenTestCase {
+    
     func testInitialDisplay() {
         app.goToScreenWithIdentifier(MockSpaceSelectorScreenState.initialList.title)
         
         let disclosureButtons = app.buttons.matching(identifier: "disclosureButton").allElementsBoundByIndex
-        XCTAssertEqual(disclosureButtons.count, MockSpaceSelectorService.defaultSpaceList.filter(\.hasSubItems).count)
+        XCTAssertEqual(disclosureButtons.count, MockSpaceSelectorService.defaultSpaceList.filter { $0.hasSubItems }.count)
 
         let notificationBadges = app.staticTexts.matching(identifier: "notificationBadge").allElementsBoundByIndex
         let itemsWithNotifications = MockSpaceSelectorService.defaultSpaceList.filter { $0.notificationCount > 0 || !$0.isJoined }
@@ -64,4 +65,5 @@ class SpaceSelectorUITests: MockScreenTestCase {
         XCTAssertEqual(app.staticTexts["emptyListPlaceholderMessage"].exists, exists)
         XCTAssertEqual(app.buttons["createSpaceButton"].exists, exists)
     }
+
 }

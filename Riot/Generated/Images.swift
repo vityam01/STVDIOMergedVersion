@@ -10,6 +10,8 @@
 #endif
 
 // Deprecated typealiases
+@available(*, deprecated, renamed: "ColorAsset.Color", message: "This typealias will be removed in SwiftGen 7.0")
+internal typealias AssetColorTypeAlias = ColorAsset.Color
 @available(*, deprecated, renamed: "ImageAsset.Image", message: "This typealias will be removed in SwiftGen 7.0")
 internal typealias AssetImageTypeAlias = ImageAsset.Image
 
@@ -36,7 +38,6 @@ internal class Asset: NSObject {
     internal static let authenticationEmailIcon = ImageAsset(name: "authentication_email_icon")
     internal static let authenticationMsisdnIcon = ImageAsset(name: "authentication_msisdn_icon")
     internal static let authenticationPasswordIcon = ImageAsset(name: "authentication_password_icon")
-    internal static let authenticationQrloginConfirmIcon = ImageAsset(name: "authentication_qrlogin_confirm_icon")
     internal static let authenticationRecaptchaIcon = ImageAsset(name: "authentication_recaptcha_icon")
     internal static let authenticationRevealPassword = ImageAsset(name: "authentication_reveal_password")
     internal static let authenticationServerSelectionIcon = ImageAsset(name: "authentication_server_selection_icon")
@@ -80,7 +81,6 @@ internal class Asset: NSObject {
     internal static let coachMark = ImageAsset(name: "coach_mark")
     internal static let disclosureIcon = ImageAsset(name: "disclosure_icon")
     internal static let errorIcon = ImageAsset(name: "error_icon")
-    internal static let exclamationCircle = ImageAsset(name: "exclamation_circle")
     internal static let faceidIcon = ImageAsset(name: "faceid_icon")
     internal static let filterOff = ImageAsset(name: "filter_off")
     internal static let filterOn = ImageAsset(name: "filter_on")
@@ -100,20 +100,6 @@ internal class Asset: NSObject {
     internal static let touchidIcon = ImageAsset(name: "touchid_icon")
     internal static let addGroupParticipant = ImageAsset(name: "add_group_participant")
     internal static let removeIconBlue = ImageAsset(name: "remove_icon_blue")
-    internal static let bold = ImageAsset(name: "Bold")
-    internal static let code = ImageAsset(name: "Code")
-    internal static let indentIncrease = ImageAsset(name: "Indent_increase")
-    internal static let italic = ImageAsset(name: "Italic")
-    internal static let link = ImageAsset(name: "Link")
-    internal static let numberedList = ImageAsset(name: "Numbered list")
-    internal static let quote = ImageAsset(name: "Quote")
-    internal static let strikethrough = ImageAsset(name: "Strikethrough")
-    internal static let underlined = ImageAsset(name: "Underlined")
-    internal static let bulletList = ImageAsset(name: "bullet_list")
-    internal static let indentDecrease = ImageAsset(name: "indent_decrease")
-    internal static let maximiseComposer = ImageAsset(name: "maximise_composer")
-    internal static let minimiseComposer = ImageAsset(name: "minimise_composer")
-    internal static let startComposeModule = ImageAsset(name: "start_compose_module")
     internal static let findYourContactsFacepile = ImageAsset(name: "find_your_contacts_facepile")
     internal static let captureAvatar = ImageAsset(name: "capture_avatar")
     internal static let deleteAvatar = ImageAsset(name: "delete_avatar")
@@ -121,19 +107,8 @@ internal class Asset: NSObject {
     internal static let deviceTypeMobile = ImageAsset(name: "device_type_mobile")
     internal static let deviceTypeUnknown = ImageAsset(name: "device_type_unknown")
     internal static let deviceTypeWeb = ImageAsset(name: "device_type_web")
-    internal static let userOtherSessionsFilter = ImageAsset(name: "user_other_sessions_filter")
-    internal static let userOtherSessionsFilterSelected = ImageAsset(name: "user_other_sessions_filter_selected")
-    internal static let userOtherSessionsInactive = ImageAsset(name: "user_other_sessions_inactive")
-    internal static let userOtherSessionsUnverified = ImageAsset(name: "user_other_sessions_unverified")
-    internal static let userOtherSessionsVerified = ImageAsset(name: "user_other_sessions_verified")
-    internal static let userSessionListItemInactiveSession = ImageAsset(name: "user_session_list_item_inactive_session")
-    internal static let userSessionListItemNotSelected = ImageAsset(name: "user_session_list_item_not_selected")
-    internal static let userSessionListItemSelected = ImageAsset(name: "user_session_list_item_selected")
     internal static let userSessionUnverified = ImageAsset(name: "user_session_unverified")
-    internal static let userSessionVerificationUnknown = ImageAsset(name: "user_session_verification_unknown")
     internal static let userSessionVerified = ImageAsset(name: "user_session_verified")
-    internal static let userSessionsInactive = ImageAsset(name: "user_sessions_inactive")
-    internal static let userSessionsUnverified = ImageAsset(name: "user_sessions_unverified")
     internal static let e2eBlocked = ImageAsset(name: "e2e_blocked")
     internal static let e2eUnencrypted = ImageAsset(name: "e2e_unencrypted")
     internal static let e2eWarning = ImageAsset(name: "e2e_warning")
@@ -175,6 +150,7 @@ internal class Asset: NSObject {
     internal static let videoIcon = ImageAsset(name: "video_icon")
     internal static let onboardingAvatarCamera = ImageAsset(name: "onboarding_avatar_camera")
     internal static let onboardingAvatarEdit = ImageAsset(name: "onboarding_avatar_edit")
+    internal static let onboardingBg = ImageAsset(name: "onboarding_bg")
     internal static let onboardingCelebrationIcon = ImageAsset(name: "onboarding_celebration_icon")
     internal static let onboardingCongratulationsIcon = ImageAsset(name: "onboarding_congratulations_icon")
     internal static let onboardingSplashScreenPage1 = ImageAsset(name: "onboarding_splash_screen_page_1")
@@ -197,9 +173,6 @@ internal class Asset: NSObject {
     internal static let peopleFloatingAction = ImageAsset(name: "people_floating_action")
     internal static let actionCamera = ImageAsset(name: "action_camera")
     internal static let actionFile = ImageAsset(name: "action_file")
-    internal static let actionFormattingDisabled = ImageAsset(name: "action_formatting_disabled")
-    internal static let actionFormattingEnabled = ImageAsset(name: "action_formatting_enabled")
-    internal static let actionLive = ImageAsset(name: "action_live")
     internal static let actionLocation = ImageAsset(name: "action_location")
     internal static let actionMediaLibrary = ImageAsset(name: "action_media_library")
     internal static let actionPoll = ImageAsset(name: "action_poll")
@@ -339,22 +312,13 @@ internal class Asset: NSObject {
     internal static let tabHome = ImageAsset(name: "tab_home")
     internal static let tabPeople = ImageAsset(name: "tab_people")
     internal static let tabRooms = ImageAsset(name: "tab_rooms")
-    internal static let voiceBroadcastLive = ImageAsset(name: "voice_broadcast_live")
-    internal static let voiceBroadcastPause = ImageAsset(name: "voice_broadcast_pause")
-    internal static let voiceBroadcastPlay = ImageAsset(name: "voice_broadcast_play")
-    internal static let voiceBroadcastRecord = ImageAsset(name: "voice_broadcast_record")
-    internal static let voiceBroadcastRecordPause = ImageAsset(name: "voice_broadcast_record_pause")
-    internal static let voiceBroadcastSpinner = ImageAsset(name: "voice_broadcast_spinner")
-    internal static let voiceBroadcastStop = ImageAsset(name: "voice_broadcast_stop")
-    internal static let voiceBroadcastTileLive = ImageAsset(name: "voice_broadcast_tile_live")
-    internal static let voiceBroadcastTileMic = ImageAsset(name: "voice_broadcast_tile_mic")
-    internal static let voiceBroadcastTimeLeft = ImageAsset(name: "voice_broadcast_time_left")
     internal static let launchScreenLogo = ImageAsset(name: "launch_screen_logo")
   }
   @objcMembers
   @objc(AssetSharedImages) internal class SharedImages: NSObject {
     internal static let cancel = ImageAsset(name: "cancel")
     internal static let e2eVerified = ImageAsset(name: "e2e_verified")
+    internal static let firstScreenColor = ColorAsset(name: "FirstScreenColor")
     internal static let horizontalLogo = ImageAsset(name: "horizontal_logo")
     internal static let radioButtonDefault = ImageAsset(name: "radio-button-default")
     internal static let radioButtonSelected = ImageAsset(name: "radio-button-selected")
@@ -363,6 +327,48 @@ internal class Asset: NSObject {
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 
 // MARK: - Implementation Details
+
+internal final class ColorAsset {
+  internal fileprivate(set) var name: String
+
+  #if os(macOS)
+  internal typealias Color = NSColor
+  #elseif os(iOS) || os(tvOS) || os(watchOS)
+  internal typealias Color = UIColor
+  #endif
+
+  @available(iOS 11.0, tvOS 11.0, watchOS 4.0, macOS 10.13, *)
+  internal private(set) lazy var color: Color = Color(asset: self)
+
+  #if os(iOS) || os(tvOS)
+  @available(iOS 11.0, tvOS 11.0, *)
+  internal func color(compatibleWith traitCollection: UITraitCollection) -> Color {
+    let bundle = BundleToken.bundle
+    guard let color = Color(named: name, in: bundle, compatibleWith: traitCollection) else {
+      fatalError("Unable to load color asset named \(name).")
+    }
+    return color
+  }
+  #endif
+
+  fileprivate init(name: String) {
+    self.name = name
+  }
+}
+
+internal extension ColorAsset.Color {
+  @available(iOS 11.0, tvOS 11.0, watchOS 4.0, macOS 10.13, *)
+  convenience init!(asset: ColorAsset) {
+    let bundle = BundleToken.bundle
+    #if os(iOS) || os(tvOS)
+    self.init(named: asset.name, in: bundle, compatibleWith: nil)
+    #elseif os(macOS)
+    self.init(named: NSColor.Name(asset.name), bundle: bundle)
+    #elseif os(watchOS)
+    self.init(named: asset.name)
+    #endif
+  }
+}
 
 @objcMembers
 internal class ImageAsset: NSObject {

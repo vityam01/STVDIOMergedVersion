@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
+import SwiftUI
 import CommonKit
 import MatrixSDK
-import SwiftUI
 
 struct AuthenticationRegistrationCoordinatorParameters {
     let navigationRouter: NavigationRouterType
@@ -49,6 +49,7 @@ enum AuthenticationRegistrationCoordinatorResult: CustomStringConvertible {
 }
 
 final class AuthenticationRegistrationCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -96,14 +97,13 @@ final class AuthenticationRegistrationCoordinator: Coordinator, Presentable {
     }
     
     // MARK: - Public
-
     func start() {
         MXLog.debug("[AuthenticationRegistrationCoordinator] did start.")
         Task { await setupViewModel() }
     }
     
     func toPresentable() -> UIViewController {
-        authenticationRegistrationHostingController
+        return self.authenticationRegistrationHostingController
     }
     
     // MARK: - Private
@@ -117,7 +117,7 @@ final class AuthenticationRegistrationCoordinator: Coordinator, Presentable {
             switch result {
             case .selectServer:
                 self.presentServerSelectionScreen()
-            case .validateUsername(let username):
+            case.validateUsername(let username):
                 self.validateUsername(username)
             case .createAccount(let username, let password):
                 self.createAccount(username: username, password: password)
@@ -230,8 +230,7 @@ final class AuthenticationRegistrationCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            let message = mxError.authenticationErrorMessage()
-            authenticationRegistrationViewModel.displayError(.mxError(message))
+            authenticationRegistrationViewModel.displayError(.mxError(mxError.error))
             return
         }
         

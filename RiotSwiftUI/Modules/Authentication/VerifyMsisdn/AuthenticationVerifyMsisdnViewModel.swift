@@ -16,9 +16,11 @@
 
 import SwiftUI
 
-typealias AuthenticationVerifyMsisdnViewModelType = StateStoreViewModel<AuthenticationVerifyMsisdnViewState, AuthenticationVerifyMsisdnViewAction>
-
+typealias AuthenticationVerifyMsisdnViewModelType = StateStoreViewModel<AuthenticationVerifyMsisdnViewState,
+                                                                       Never,
+                                                                       AuthenticationVerifyMsisdnViewAction>
 class AuthenticationVerifyMsisdnViewModel: AuthenticationVerifyMsisdnViewModelType, AuthenticationVerifyMsisdnViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Private

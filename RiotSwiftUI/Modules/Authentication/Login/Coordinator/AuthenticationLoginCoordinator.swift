@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
+import SwiftUI
 import CommonKit
 import MatrixSDK
-import SwiftUI
 
 struct AuthenticationLoginCoordinatorParameters {
     let navigationRouter: NavigationRouterType
@@ -30,8 +30,6 @@ enum AuthenticationLoginCoordinatorResult: CustomStringConvertible {
     case continueWithSSO(SSOIdentityProvider)
     /// Login was successful with the associated session created.
     case success(session: MXSession, password: String)
-    /// Login was successful with the associated session created.
-    case loggedInWithQRCode(session: MXSession, securityCompleted: Bool)
     /// Login requested a fallback
     case fallback
     
@@ -42,8 +40,6 @@ enum AuthenticationLoginCoordinatorResult: CustomStringConvertible {
             return "continueWithSSO: \(provider)"
         case .success:
             return "success"
-        case .loggedInWithQRCode:
-            return "loggedInWithQRCode"
         case .fallback:
             return "fallback"
         }
@@ -51,6 +47,7 @@ enum AuthenticationLoginCoordinatorResult: CustomStringConvertible {
 }
 
 final class AuthenticationLoginCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -99,7 +96,6 @@ final class AuthenticationLoginCoordinator: Coordinator, Presentable {
     }
     
     // MARK: - Public
-
     func start() {
         MXLog.debug("[AuthenticationLoginCoordinator] did start.")
         Task { await setupViewModel() }
@@ -130,8 +126,6 @@ final class AuthenticationLoginCoordinator: Coordinator, Presentable {
                 self.callback?(.continueWithSSO(identityProvider))
             case .fallback:
                 self.callback?(.fallback)
-            case .qrLogin:
-                self.showQRLoginScreen()
             }
         }
     }
@@ -180,8 +174,7 @@ final class AuthenticationLoginCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            let message = mxError.authenticationErrorMessage()
-            authenticationLoginViewModel.displayError(.mxError(message))
+            authenticationLoginViewModel.displayError(.mxError(mxError.error))
             return
         }
         
@@ -288,33 +281,6 @@ final class AuthenticationLoginCoordinator: Coordinator, Presentable {
         modalRouter.setRootModule(coordinator)
 
         navigationRouter.present(modalRouter, animated: true)
-    }
-
-    /// Shows the QR login screen.
-    @MainActor private func showQRLoginScreen() {
-        MXLog.debug("[AuthenticationLoginCoordinator] showQRLoginScreen")
-
-        let service = QRLoginService(client: parameters.authenticationService.client,
-                                     mode: .notAuthenticated)
-        let parameters = AuthenticationQRLoginStartCoordinatorParameters(navigationRouter: navigationRouter,
-                                                                         qrLoginService: service)
-        let coordinator = AuthenticationQRLoginStartCoordinator(parameters: parameters)
-        coordinator.callback = { [weak self, weak coordinator] callback in
-            guard let self = self, let coordinator = coordinator else { return }
-            switch callback {
-            case .done(let session, let securityCompleted):
-                self.callback?(.loggedInWithQRCode(session: session, securityCompleted: securityCompleted))
-            }
-            
-            self.remove(childCoordinator: coordinator)
-        }
-
-        coordinator.start()
-        add(childCoordinator: coordinator)
-
-        navigationRouter.push(coordinator, animated: true) { [weak self] in
-            self?.remove(childCoordinator: coordinator)
-        }
     }
     
     /// Updates the view model to reflect any changes made to the homeserver.

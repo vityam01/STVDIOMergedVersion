@@ -24,9 +24,6 @@ schemes:
       disableMainThreadChecker: true
       targets:
       - RiotSwiftUnitTests
-      gatherCoverageData: true
-      coverageTargets:
-        - RiotSwiftUI
 
 targets:
   RiotSwiftUI:
@@ -35,7 +32,6 @@ targets:
     dependencies:
     - target: DesignKit
     - package: Mapbox
-    - package: WysiwygComposer
     sources:
     - path: .
       excludes:
@@ -58,12 +54,9 @@ targets:
     - path: ../Riot/Categories/UISearchBar.swift
     - path: ../Riot/Categories/UIView.swift
     - path: ../Riot/Categories/UIApplication.swift
-    - path: ../Riot/Categories/Codable.swift
     - path: ../Riot/Assets/en.lproj/Vector.strings
     - path: ../Riot/Modules/Analytics/AnalyticsScreen.swift
     - path: ../Riot/Modules/LocationSharing/LocationAuthorizationStatus.swift
-    - path: ../Riot/Modules/QRCode/QRCodeGenerator.swift
-    - path: ../Riot/Modules/VoiceBroadcast/VoiceBroadcastSDK/VoiceBroadcastInfoState.swift
     - path: ../Riot/Assets/en.lproj/Untranslated.strings
       buildPhase: resources
     - path: ../Riot/Assets/Images.xcassets
@@ -73,9 +66,3 @@ targets:
     configFiles:
       Debug: Debug.xcconfig
       Release: Release.xcconfig
-
-    postBuildScripts:
-    - name: 🧹 SwiftFormat
-      runOnlyWhenInstalling: false
-      shell: /bin/sh
-      script: "\"${PODS_ROOT}/SwiftFormat/CommandLineTool/swiftformat\" --lint --lenient \"$PROJECT_DIR\"\n"

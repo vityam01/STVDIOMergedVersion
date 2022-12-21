@@ -1940,7 +1940,7 @@ NSString *const RecentsViewControllerDataReadyNotification = @"RecentsViewContro
     {
         self.exploreRoomsCoordinatorBridgePresenter = [[ExploreRoomCoordinatorBridgePresenter alloc] initWithSession:self.mainSession spaceId:self.dataSource.currentSpace.spaceId];
         self.exploreRoomsCoordinatorBridgePresenter.delegate = self;
-        [self.exploreRoomsCoordinatorBridgePresenter presentFrom:self animated:YES];
+        [self.exploreRoomsCoordinatorBridgePresenter presentFrom:self animated:YES presentationStyle: UIModalPresentationFullScreen];
     }
     else if (RiotSettings.shared.roomsAllowToJoinPublicRooms)
     {
@@ -2226,8 +2226,7 @@ NSString *const RecentsViewControllerDataReadyNotification = @"RecentsViewContro
         [self.view addSubview:emptyView];
     }
     
-    NSLayoutYAxisAnchor *bottomAnchor = self.emptyViewBottomAnchor ?: emptyView.superview.bottomAnchor;
-    emptyViewBottomConstraint = [emptyView.bottomAnchor constraintEqualToAnchor:bottomAnchor constant:-1]; // 1pt spacing for UIToolbar's divider.
+    emptyViewBottomConstraint = [emptyView.bottomAnchor constraintEqualToAnchor:emptyView.superview.bottomAnchor];
     
     emptyView.translatesAutoresizingMaskIntoConstraints = NO;
     

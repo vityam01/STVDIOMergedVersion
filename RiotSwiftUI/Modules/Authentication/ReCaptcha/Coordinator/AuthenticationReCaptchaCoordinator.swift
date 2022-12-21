@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import CommonKit
 import SwiftUI
+import CommonKit
 
 struct AuthenticationReCaptchaCoordinatorParameters {
     let registrationWizard: RegistrationWizard
@@ -26,6 +26,7 @@ struct AuthenticationReCaptchaCoordinatorParameters {
 }
 
 final class AuthenticationReCaptchaCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -75,7 +76,7 @@ final class AuthenticationReCaptchaCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        authenticationReCaptchaHostingController
+        return self.authenticationReCaptchaHostingController
     }
     
     // MARK: - Private
@@ -130,8 +131,7 @@ final class AuthenticationReCaptchaCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            let message = mxError.authenticationErrorMessage()
-            authenticationReCaptchaViewModel.displayError(.mxError(message))
+            authenticationReCaptchaViewModel.displayError(.mxError(mxError.error))
             return
         }
         
