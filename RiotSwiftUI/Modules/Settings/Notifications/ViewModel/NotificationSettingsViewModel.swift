@@ -16,11 +16,12 @@
  limitations under the License.
  */
 
-import Combine
 import Foundation
+import Combine
 import SwiftUI
 
 final class NotificationSettingsViewModel: NotificationSettingsViewModelType, ObservableObject {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -45,7 +46,7 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
     init(notificationSettingsService: NotificationSettingsServiceType, ruleIds: [NotificationPushRuleId], initialState: NotificationSettingsViewState) {
         self.notificationSettingsService = notificationSettingsService
         self.ruleIds = ruleIds
-        viewState = initialState
+        self.viewState = initialState
         
         // Observe when the rules are updated, to subsequently update the state of the settings.
         notificationSettingsService.rulesPublisher
@@ -56,11 +57,11 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
         if ruleIds.contains(.keywords) {
             // Publisher of all the keyword push rules (keyword rules do not start with '.')
             let keywordsRules = notificationSettingsService.contentRulesPublisher
-                .map { $0.filter { !$0.ruleId.starts(with: ".") } }
+                .map { $0.filter { !$0.ruleId.starts(with: ".")} }
             
             // Map to just the keyword strings
             let keywords = keywordsRules
-                .map { Set($0.compactMap(\.ruleId)) }
+                .map { Set($0.compactMap { $0.ruleId }) }
             
             // Update the keyword set
             keywords
@@ -99,7 +100,7 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
     }
     
     convenience init(notificationSettingsService: NotificationSettingsServiceType, ruleIds: [NotificationPushRuleId]) {
-        let ruleState = Dictionary(uniqueKeysWithValues: ruleIds.map { ($0, selected: true) })
+        let ruleState = Dictionary(uniqueKeysWithValues: ruleIds.map({ ($0, selected: true) }))
         self.init(notificationSettingsService: notificationSettingsService, ruleIds: ruleIds, initialState: NotificationSettingsViewState(saving: false, ruleIds: ruleIds, selectionState: ruleState))
     }
     
@@ -124,7 +125,7 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
     
     private func updateKeywords(isChecked: Bool) {
         guard !keywordsOrdered.isEmpty else {
-            viewState.selectionState[.keywords]?.toggle()
+            self.viewState.selectionState[.keywords]?.toggle()
             return
         }
         // Get the static definition and update the actions and enabled state for every keyword.
@@ -148,23 +149,22 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
     }
     
     func remove(keyword: String) {
-        keywordsOrdered = keywordsOrdered.filter { $0 != keyword }
+        keywordsOrdered = keywordsOrdered.filter({ $0 != keyword })
         notificationSettingsService.remove(keyword: keyword)
     }
     
     // MARK: - Private
-
     private func rulesUpdated(newRules: [NotificationPushRuleType]) {
         for rule in newRules {
             guard let ruleId = NotificationPushRuleId(rawValue: rule.ruleId),
                   ruleIds.contains(ruleId) else { continue }
-            viewState.selectionState[ruleId] = isChecked(rule: rule)
+            self.viewState.selectionState[ruleId] = self.isChecked(rule: rule)
         }
     }
     
     private func keywordRuleUpdated(anyEnabled: Bool) {
         if !keywordsOrdered.isEmpty {
-            viewState.selectionState[.keywords] = anyEnabled
+            self.viewState.selectionState[.keywords] = anyEnabled
         }
     }
       
@@ -178,7 +178,7 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
         guard let ruleId = NotificationPushRuleId(rawValue: rule.ruleId) else { return false }
         
         let firstIndex = NotificationIndex.allCases.first { nextIndex in
-            rule.matches(standardActions: ruleId.standardActions(for: nextIndex))
+            return rule.matches(standardActions: ruleId.standardActions(for: nextIndex))
         }
         
         guard let index = firstIndex else {
@@ -187,4 +187,5 @@ final class NotificationSettingsViewModel: NotificationSettingsViewModelType, Ob
         
         return index.enabled
     }
+
 }

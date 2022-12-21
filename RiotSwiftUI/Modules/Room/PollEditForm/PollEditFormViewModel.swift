@@ -14,18 +14,20 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
 struct PollEditFormViewModelParameters {
     let mode: PollEditFormMode
     let pollDetails: EditFormPollDetails
 }
 
-typealias PollEditFormViewModelType = StateStoreViewModel<PollEditFormViewState, PollEditFormViewAction>
-
+typealias PollEditFormViewModelType = StateStoreViewModel <PollEditFormViewState,
+                                                           Never,
+                                                           PollEditFormViewAction>
 class PollEditFormViewModel: PollEditFormViewModelType, PollEditFormViewModelProtocol {
-    private enum Constants {
+    
+    private struct Constants {
         static let minAnswerOptionsCount = 2
         static let maxAnswerOptionsCount = 20
         static let maxQuestionLength = 340
@@ -100,11 +102,11 @@ class PollEditFormViewModel: PollEditFormViewModelType, PollEditFormViewModelPro
     // MARK: - Private
     
     private func buildPollDetails() -> EditFormPollDetails {
-        EditFormPollDetails(type: state.bindings.type,
-                            question: state.bindings.question.text.trimmingCharacters(in: .whitespacesAndNewlines),
-                            answerOptions: state.bindings.answerOptions.compactMap { answerOption in
-                                let text = answerOption.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                                return text.isEmpty ? nil : text
-                            })
+        return EditFormPollDetails(type: state.bindings.type,
+                                   question: state.bindings.question.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                                   answerOptions: state.bindings.answerOptions.compactMap({ answerOption in
+            let text = answerOption.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return text.isEmpty ? nil : text
+        }))
     }
 }

@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
+import SwiftUI
 import CommonKit
 import SafariServices
-import SwiftUI
 
 struct AuthenticationTermsCoordinatorParameters {
     let registrationWizard: RegistrationWizard
@@ -27,6 +27,7 @@ struct AuthenticationTermsCoordinatorParameters {
 }
 
 final class AuthenticationTermsCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -79,7 +80,7 @@ final class AuthenticationTermsCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        authenticationTermsHostingController
+        return self.authenticationTermsHostingController
     }
     
     // MARK: - Private
@@ -149,8 +150,7 @@ final class AuthenticationTermsCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            let message = mxError.authenticationErrorMessage()
-            authenticationTermsViewModel.displayError(.mxError(message))
+            authenticationTermsViewModel.displayError(.mxError(mxError.error))
             return
         }
         

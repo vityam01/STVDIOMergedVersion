@@ -1,6 +1,6 @@
 // File created from SimpleUserProfileExample
 // $ createScreen.sh Spaces/SpaceCreation/SpaceCreationPostProcess SpaceCreationPostProcess
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,13 @@
 // limitations under the License.
 //
 
-import Combine
 import XCTest
+import Combine
 
 @testable import RiotSwiftUI
 
 class SpaceCreationPostProcessViewModelTests: XCTestCase {
+    
     var service: MockSpaceCreationPostProcessService!
     var viewModel: SpaceCreationPostProcessViewModelProtocol!
     var context: SpaceCreationPostProcessViewModelType.Context!

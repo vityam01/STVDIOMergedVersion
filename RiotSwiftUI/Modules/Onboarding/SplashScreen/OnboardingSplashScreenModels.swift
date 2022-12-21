@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,7 @@ enum OnboardingSplashScreenViewModelResult {
 // MARK: View
 
 struct OnboardingSplashScreenViewState: BindableState, CustomDebugStringConvertible {
+    
     /// The colours of the background gradient shown behind the 4 pages.
     private let gradientColors = [
         Color(red: 0.95, green: 0.98, blue: 0.96),
@@ -66,7 +67,7 @@ struct OnboardingSplashScreenViewState: BindableState, CustomDebugStringConverti
         let locale = Locale.current
         let page4Title = locale.identifier.hasPrefix("en") ? "Cut the slack from teams." : VectorL10n.onboardingSplashPage4TitleNoPun
         
-        content = [
+        self.content = [
             OnboardingSplashScreenPageContent(title: VectorL10n.onboardingSplashPage1Title,
                                               message: VectorL10n.onboardingSplashPage1Message,
                                               image: Asset.Images.onboardingSplashScreenPage1,
@@ -82,9 +83,9 @@ struct OnboardingSplashScreenViewState: BindableState, CustomDebugStringConverti
             OnboardingSplashScreenPageContent(title: page4Title,
                                               message: VectorL10n.onboardingSplashPage4Message,
                                               image: Asset.Images.onboardingSplashScreenPage4,
-                                              darkImage: Asset.Images.onboardingSplashScreenPage4Dark)
+                                              darkImage: Asset.Images.onboardingSplashScreenPage4Dark),
         ]
-        bindings = OnboardingSplashScreenBindings()
+        self.bindings = OnboardingSplashScreenBindings()
     }
 }
 

@@ -16,10 +16,11 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
 struct SpaceCreationSettings: View {
+    
     // MARK: - Properties
     
     @ObservedObject var viewModel: SpaceCreationSettingsViewModel.Context
@@ -68,8 +69,8 @@ struct SpaceCreationSettings: View {
         ZStack(alignment: .bottomTrailing) {
             GeometryReader { reader in
                 ZStack {
-                    SpaceAvatarImage(mxContentUri: viewModel.viewState.avatar.mxContentUri, matrixItemId: viewModel.viewState.avatar.matrixItemId, displayName: viewModel.viewState.avatar.displayName, size: .xxLarge)
-                        .padding(6)
+                        SpaceAvatarImage(mxContentUri: viewModel.viewState.avatar.mxContentUri, matrixItemId: viewModel.viewState.avatar.matrixItemId, displayName: viewModel.viewState.avatar.displayName, size: .xxLarge)
+                    .padding(6)
                     if let image = viewModel.viewState.avatarImage {
                         Image(uiImage: image)
                             .resizable()
@@ -78,10 +79,10 @@ struct SpaceCreationSettings: View {
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                 }.padding(10)
-                    .gesture(TapGesture().onEnded { _ in
-                        ResponderManager.resignFirstResponder()
-                        viewModel.send(viewAction: .pickImage(reader.frame(in: .global)))
-                    })
+                .gesture(TapGesture().onEnded { _ in
+                    ResponderManager.resignFirstResponder()
+                    viewModel.send(viewAction: .pickImage(reader.frame(in: .global)))
+                })
             }
             Image(uiImage: Asset.Images.spaceCreationCamera.image)
                 .renderingMode(.template)
@@ -94,21 +95,21 @@ struct SpaceCreationSettings: View {
     
     @ViewBuilder
     private var formView: some View {
-        GeometryReader { _ in
+        GeometryReader { geometryReader in
             ScrollView {
                 ScrollViewReader { scrollViewReader in
                     VStack {
                         headerView
                         Spacer()
                         avatarView
-                        Spacer().frame(height: 40)
-                        RoundedBorderTextField(title: VectorL10n.createRoomPlaceholderName, placeHolder: "", text: $viewModel.roomName, footerText: viewModel.viewState.roomNameError, isError: true, isFirstResponder: false, configuration: UIKitTextInputConfiguration(returnKeyType: .next), onTextChanged: { newText in
+                        Spacer().frame(height:40)
+                        RoundedBorderTextField(title: VectorL10n.createRoomPlaceholderName, placeHolder: "", text: $viewModel.roomName, footerText: viewModel.viewState.roomNameError, isError: true, isFirstResponder: false, configuration: UIKitTextInputConfiguration( returnKeyType: .next), onTextChanged: { newText in
                             viewModel.send(viewAction: .nameChanged(newText))
                         })
                         .id("nameTextField")
                         .padding(.horizontal, 2)
                         .padding(.bottom, 20)
-                        RoundedBorderTextEditor(title: nil, placeHolder: VectorL10n.spaceTopic, text: $viewModel.topic, textMaxHeight: 72, error: nil, onTextChanged: {
+                        RoundedBorderTextEditor(title: nil, placeHolder: VectorL10n.spaceTopic, text: $viewModel.topic, textMaxHeight: 72, error: nil, onTextChanged:  {
                             newText in
                             viewModel.send(viewAction: .topicChanged(newText))
                         }, onEditingChanged: { editing in
@@ -120,7 +121,7 @@ struct SpaceCreationSettings: View {
                         .padding(.horizontal, 2)
                         .padding(.bottom, viewModel.viewState.showRoomAddress ? 20 : 3)
                         if viewModel.viewState.showRoomAddress {
-                            RoundedBorderTextField(title: VectorL10n.spacesCreationAddress, placeHolder: "# \(viewModel.viewState.defaultAddress)", text: $viewModel.address, footerText: viewModel.viewState.addressMessage, isError: !viewModel.viewState.isAddressValid, configuration: UIKitTextInputConfiguration(keyboardType: .URL, returnKeyType: .done, autocapitalizationType: .none), onTextChanged: {
+                            RoundedBorderTextField(title: VectorL10n.spacesCreationAddress, placeHolder: "# \(viewModel.viewState.defaultAddress)", text: $viewModel.address, footerText: viewModel.viewState.addressMessage, isError: !viewModel.viewState.isAddressValid, configuration: UIKitTextInputConfiguration(keyboardType: .URL, returnKeyType: .done, autocapitalizationType: .none), onTextChanged:  {
                                 newText in
                                 viewModel.send(viewAction: .addressChanged(newText))
                             })

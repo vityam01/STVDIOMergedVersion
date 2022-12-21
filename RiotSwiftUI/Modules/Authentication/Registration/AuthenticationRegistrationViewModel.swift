@@ -14,12 +14,15 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
-typealias AuthenticationRegistrationViewModelType = StateStoreViewModel<AuthenticationRegistrationViewState, AuthenticationRegistrationViewAction>
+typealias AuthenticationRegistrationViewModelType = StateStoreViewModel<AuthenticationRegistrationViewState,
+                                                                        Never,
+                                                                        AuthenticationRegistrationViewAction>
 
 class AuthenticationRegistrationViewModel: AuthenticationRegistrationViewModelType, AuthenticationRegistrationViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Public

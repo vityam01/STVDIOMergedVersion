@@ -15,8 +15,8 @@
 //
 
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
 
 internal protocol MatrixItemChooserCoordinatorViewProvider {
     func view(with viewModel: MatrixItemChooserViewModelType.Context) -> AnyView
@@ -49,6 +49,7 @@ struct MatrixItemChooserCoordinatorParameters {
 }
 
 final class MatrixItemChooserCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -93,6 +94,6 @@ final class MatrixItemChooserCoordinator: Coordinator, Presentable {
     // MARK: - Presentable
     
     func toPresentable() -> UIViewController {
-        matrixItemChooserHostingController
+        return self.matrixItemChooserHostingController
     }
 }

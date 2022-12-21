@@ -1,4 +1,4 @@
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +24,10 @@ protocol UserSuggestionCoordinatorBridgeDelegate: AnyObject {
 
 @objcMembers
 final class UserSuggestionCoordinatorBridge: NSObject {
-    private var _userSuggestionCoordinator: Any?
+    
+    private var _userSuggestionCoordinator: Any? = nil
     fileprivate var userSuggestionCoordinator: UserSuggestionCoordinator {
-        _userSuggestionCoordinator as! UserSuggestionCoordinator
+        return _userSuggestionCoordinator as! UserSuggestionCoordinator
     }
     
     weak var delegate: UserSuggestionCoordinatorBridgeDelegate?
@@ -34,7 +35,7 @@ final class UserSuggestionCoordinatorBridge: NSObject {
     init(mediaManager: MXMediaManager, room: MXRoom) {
         let parameters = UserSuggestionCoordinatorParameters(mediaManager: mediaManager, room: room)
         let userSuggestionCoordinator = UserSuggestionCoordinator(parameters: parameters)
-        _userSuggestionCoordinator = userSuggestionCoordinator
+        self._userSuggestionCoordinator = userSuggestionCoordinator
         
         super.init()
         
@@ -42,11 +43,11 @@ final class UserSuggestionCoordinatorBridge: NSObject {
     }
     
     func processTextMessage(_ textMessage: String) {
-        userSuggestionCoordinator.processTextMessage(textMessage)
+        return self.userSuggestionCoordinator.processTextMessage(textMessage)
     }
     
     func toPresentable() -> UIViewController? {
-        userSuggestionCoordinator.toPresentable()
+        return self.userSuggestionCoordinator.toPresentable()
     }
 }
 

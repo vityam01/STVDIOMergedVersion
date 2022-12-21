@@ -16,9 +16,12 @@
 
 import SwiftUI
 
-typealias OnboardingUseCaseViewModelType = StateStoreViewModel<OnboardingUseCaseViewState, OnboardingUseCaseViewAction>
+typealias OnboardingUseCaseViewModelType = StateStoreViewModel<OnboardingUseCaseViewState,
+                                                               OnboardingUseCaseStateAction,
+                                                               OnboardingUseCaseViewAction>
 
 class OnboardingUseCaseViewModel: OnboardingUseCaseViewModelType, OnboardingUseCaseViewModelProtocol {
+
     // MARK: - Properties
 
     // MARK: Private
@@ -40,5 +43,9 @@ class OnboardingUseCaseViewModel: OnboardingUseCaseViewModelType, OnboardingUseC
         case .answer(let result):
             completion?(result)
         }
+    }
+
+    override class func reducer(state: inout OnboardingUseCaseViewState, action: OnboardingUseCaseStateAction) {
+        // There is no mutable state to reduce :)
     }
 }

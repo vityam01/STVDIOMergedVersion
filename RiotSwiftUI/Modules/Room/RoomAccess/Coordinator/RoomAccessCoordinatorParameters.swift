@@ -20,6 +20,7 @@ import Foundation
 
 /// RoomAccessCoordinator input parameters
 struct RoomAccessCoordinatorParameters {
+    
     /// The Matrix room
     let room: MXRoom
     

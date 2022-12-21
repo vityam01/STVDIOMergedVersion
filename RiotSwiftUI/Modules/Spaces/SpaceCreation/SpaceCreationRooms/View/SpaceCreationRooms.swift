@@ -1,6 +1,6 @@
 // File created from SimpleUserProfileExample
 // $ createScreen.sh Spaces/SpaceCreation/SpaceCreationRooms SpaceCreationRooms
-//
+// 
 // Copyright 2021 New Vector Ltd
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 import SwiftUI
 
 struct SpaceCreationRooms: View {
+
     // MARK: - Properties
     
     // MARK: Private
@@ -49,7 +50,7 @@ struct SpaceCreationRooms: View {
         VStack {
             GeometryReader { reader in
                 ScrollView {
-                    ScrollViewReader { _ in
+                    ScrollViewReader { scrollViewReader in
                         VStack(spacing: 20) {
                             Text(VectorL10n.spacesCreationNewRoomsTitle)
                                 .multilineTextAlignment(.center)
@@ -60,8 +61,8 @@ struct SpaceCreationRooms: View {
                                 .font(theme.fonts.body)
                                 .foregroundColor(theme.colors.secondaryContent)
                             Spacer()
-                            ForEach(viewModel.rooms.indices, id: \.self) { index in
-                                RoundedBorderTextField(title: VectorL10n.spacesCreationNewRoomsRoomNameTitle, placeHolder: viewModel.rooms[index].defaultName, text: $viewModel.rooms[index].name, configuration: UIKitTextInputConfiguration(returnKeyType: index < viewModel.rooms.endIndex - 1 ? .next : .done))
+                            ForEach(viewModel.rooms.indices) { index in
+                                RoundedBorderTextField(title: VectorL10n.spacesCreationNewRoomsRoomNameTitle, placeHolder: viewModel.rooms[index].defaultName, text: $viewModel.rooms[index].name,  configuration: UIKitTextInputConfiguration( returnKeyType: index < viewModel.rooms.endIndex - 1 ? .next : .done))
                                     .accessibility(identifier: "roomTextField")
                             }
                         }

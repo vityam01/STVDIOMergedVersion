@@ -16,12 +16,16 @@
 // limitations under the License.
 //
 
-import Combine
 import SwiftUI
+import Combine
 
-typealias SpaceCreationRoomsViewModelType = StateStoreViewModel<SpaceCreationRoomsViewState, SpaceCreationRoomsViewAction>
 
+
+typealias SpaceCreationRoomsViewModelType = StateStoreViewModel<SpaceCreationRoomsViewState,
+                                                                 SpaceCreationRoomsStateAction,
+                                                                 SpaceCreationRoomsViewAction>
 class SpaceCreationRoomsViewModel: SpaceCreationRoomsViewModelType, SpaceCreationRoomsViewModelProtocol {
+
     // MARK: - Setup
     
     // MARK: Private
@@ -47,6 +51,7 @@ class SpaceCreationRoomsViewModel: SpaceCreationRoomsViewModelType, SpaceCreatio
         )
     }
 
+
     // MARK: - Public
 
     override func process(viewAction: SpaceCreationRoomsViewAction) {
@@ -59,11 +64,14 @@ class SpaceCreationRoomsViewModel: SpaceCreationRoomsViewModelType, SpaceCreatio
             done()
         }
     }
+
+    override class func reducer(state: inout SpaceCreationRoomsViewState, action: SpaceCreationRoomsStateAction) {
+    }
     
     // MARK: - Private
 
     private func done() {
-        creationParameters.newRooms = context.rooms
+        self.creationParameters.newRooms = self.context.rooms
         callback?(.done)
     }
 

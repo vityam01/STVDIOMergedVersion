@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import CommonKit
 import SwiftUI
+import CommonKit
 
 struct AuthenticationForgotPasswordCoordinatorParameters {
     let navigationRouter: NavigationRouterType
@@ -32,6 +32,7 @@ enum AuthenticationForgotPasswordCoordinatorResult {
 }
 
 final class AuthenticationForgotPasswordCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -82,7 +83,7 @@ final class AuthenticationForgotPasswordCoordinator: Coordinator, Presentable {
     }
     
     func toPresentable() -> UIViewController {
-        authenticationForgotPasswordHostingController
+        return self.authenticationForgotPasswordHostingController
     }
     
     // MARK: - Private
@@ -164,8 +165,7 @@ final class AuthenticationForgotPasswordCoordinator: Coordinator, Presentable {
     /// Processes an error to either update the flow or display it to the user.
     @MainActor private func handleError(_ error: Error) {
         if let mxError = MXError(nsError: error as NSError) {
-            let message = mxError.authenticationErrorMessage()
-            authenticationForgotPasswordViewModel.displayError(.mxError(message))
+            authenticationForgotPasswordViewModel.displayError(.mxError(mxError.error))
             return
         }
         

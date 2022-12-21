@@ -16,8 +16,8 @@
 // limitations under the License.
 //
 
-import RiotSwiftUI
 import XCTest
+import RiotSwiftUI
 
 class SpaceCreationEmailInvitesUITests: MockScreenTestCase {
     func testDefaultEmailValues() {

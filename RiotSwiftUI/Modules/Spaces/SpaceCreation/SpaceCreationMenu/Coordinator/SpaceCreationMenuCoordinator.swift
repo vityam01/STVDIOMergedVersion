@@ -17,10 +17,11 @@
  */
 
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
 
 final class SpaceCreationMenuCoordinator: Coordinator, Presentable {
+    
     // MARK: - Properties
     
     // MARK: Private
@@ -62,11 +63,12 @@ final class SpaceCreationMenuCoordinator: Coordinator, Presentable {
                 self.callback?(.cancel)
             case .back:
                 self.callback?(.back)
+            break
             }
         }
     }
     
     func toPresentable() -> UIViewController {
-        spaceCreationMenuHostingController
+        return self.spaceCreationMenuHostingController
     }
 }
